@@ -27,6 +27,19 @@
   }
   #bgm:hover{border-color:#ffd23a;color:#ffd23a}
 
+  /* 紙芝居スタイルのタイトル */
+  .title-kamishibai{position:absolute;inset:0;background:#000;overflow:hidden;display:flex;flex-direction:column}
+  .title-kamishibai .ks-img-wrap{flex:1;display:flex;align-items:center;justify-content:center;background:#000;position:relative;overflow:hidden;min-height:50vh}
+  .title-kamishibai .ks-img{max-width:100%;max-height:100%;object-fit:contain;animation:fadeIn .6s ease-out}
+  .title-kamishibai .ks-caption{background:linear-gradient(180deg,rgba(0,0,0,.6) 0%,rgba(0,0,0,.95) 30%,rgba(0,0,0,.98) 100%);padding:24px 30px 28px;text-align:center;border-top:3px solid #ff5a9a;display:flex;flex-direction:column;align-items:center;gap:10px;min-height:280px}
+  .title-kamishibai .ks-big{font-size:32px;font-weight:900;color:#fff;background:linear-gradient(90deg,rgba(217,46,46,.95),rgba(255,90,154,.95),rgba(255,210,58,.95));padding:12px 28px;border:3px solid #fff;border-radius:16px;text-shadow:3px 3px 0 #000,-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000;box-shadow:6px 6px 0 #000,0 0 30px rgba(255,90,154,.7);line-height:1.2;letter-spacing:.04em;animation:hookPulse 1.8s ease-in-out infinite;max-width:90%}
+  .title-kamishibai .ks-mid{font-size:24px;color:#ff5a9a;font-weight:900;text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000,4px 4px 0 #5af0e0,0 0 18px #ff5a9a;letter-spacing:.05em;line-height:1.2}
+  .title-kamishibai .ks-sub{font-size:13px;color:#ffd23a;text-shadow:1px 1px 0 #000;letter-spacing:.15em;font-weight:bold}
+  .title-kamishibai .ks-start{font-family:inherit;font-size:24px;font-weight:900;padding:14px 60px;background:linear-gradient(180deg,#ff5a9a,#d92e6e);color:#fff;border:3px solid #000;border-radius:14px;cursor:pointer;letter-spacing:.15em;box-shadow:5px 5px 0 #000,0 6px 30px rgba(255,90,154,.7);animation:pulse 1.5s ease-in-out infinite;text-shadow:2px 2px 0 #000;margin-top:8px}
+  .title-kamishibai .ks-start:active{transform:translateY(3px);box-shadow:2px 2px 0 #000}
+  .title-kamishibai .ks-banner{font-size:13px;color:#fff;background:rgba(217,46,46,.9);padding:6px 18px;border-radius:18px;border:2px solid #fff;font-weight:bold;text-shadow:1px 1px 0 #000;letter-spacing:.05em}
+  .title-kamishibai .ks-bgm{position:absolute;top:14px;left:14px;z-index:5}
+
   /* タイトル */
   .title-screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:14px;padding:28px 20px 24px;overflow-y:auto;background:#0a0014}
   .title-bg-img{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.45;filter:saturate(.9)}
@@ -860,6 +873,26 @@ function renderTitleC(){
 }
 
 function renderTitleB(){
+  const p = PATTERNS[patternIdx];
+  root.innerHTML = `
+    <div class="title-kamishibai">
+      <div class="ks-img-wrap">
+        <img class="ks-img" src="画像/title.png" alt="" onerror="this.style.display='none'">
+      </div>
+      <div class="ks-caption">
+        <div class="ks-big">${p.hook}</div>
+        <div class="ks-mid">${p.title}</div>
+        <div class="ks-sub">${p.subtitle}</div>
+        <div class="ks-banner">${p.banner}</div>
+        <button class="ks-start" onclick="startBGM();go('opening')">▶ START</button>
+      </div>
+    </div>
+    ${copyBar()}
+  `;
+  return;
+}
+
+function renderTitleBOld(){
   root.innerHTML = `
     <div class="title-screen">
       <div class="title-bg-img" id="titleBg"></div>
