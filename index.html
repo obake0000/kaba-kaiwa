@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>💋 キャバ会話C：紙芝居版</title>
+<title>キャバ会話 — 嬢視点ブラック —</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;user-select:none}
   body{
@@ -606,7 +606,9 @@ document.addEventListener('keydown', e=>{
 // =========================================================================
 // タイトル
 // =========================================================================
-let titlePattern = (localStorage.getItem('titlePattern') || 'B');
+// titlePattern を 'B'（派手）に強制固定（過去の選択は破棄）
+try{ localStorage.removeItem('titlePattern'); }catch(e){}
+let titlePattern = 'B';
 
 // タイトル＋副題＋コピー 統合パターン
 const PATTERNS = [
