@@ -1202,8 +1202,8 @@ function renderKami(mode){
   const item = list[idx];
   root.innerHTML = `
     <div class="kami-screen" id="kamiScreen">
-      <div class="kami-img-wrap" id="imgWrap">
-        <img class="kami-img" src="画像/${item.file}" alt="" onerror="this.style.display='none';var ph=document.getElementById('kamiPh');if(ph)ph.style.display='flex'">
+      <div class="kami-img-wrap" id="imgWrap" style="background:#000">
+        <img class="kami-img" src="画像/${item.file}" alt="" style="opacity:0;transition:opacity .35s" onload="this.style.opacity=1" onerror="this.style.display='none';var ph=document.getElementById('kamiPh');if(ph)ph.style.display='flex'">
         <div class="kami-placeholder ${isGameover?'go':''}" id="kamiPh" style="display:none">
           <div class="ico">${item.ico}</div>
           <div class="num">${chapter} ${idx+1} / ${list.length}</div>
