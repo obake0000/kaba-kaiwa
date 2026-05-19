@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>💋 キャバ会話C：紙芝居版</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;user-select:none}
+  body{
+    font-family:"Yu Gothic UI","Meiryo UI",system-ui,sans-serif;
+    background:#000;color:#fff;min-height:100vh;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+  }
+  #root{width:100vw;height:100vh;position:relative;background:#0a0014}
+  #skip{
+    position:fixed;top:14px;right:14px;z-index:1000;
+    background:rgba(0,0,0,.6);color:#ff8ad0;border:1px solid #ff5a9a;
+    padding:6px 14px;border-radius:18px;font-size:12px;cursor:pointer;
+    font-family:inherit;letter-spacing:.05em;
+  }
+  #skip:hover{background:#ff5a9a;color:#fff}
+  #skip.hide{display:none}
+  #bgm{
+    position:fixed;top:14px;left:14px;z-index:1000;
+    background:rgba(0,0,0,.6);color:#fff;border:1px solid #555;
+    padding:6px 12px;border-radius:18px;font-size:11px;cursor:pointer;
+    font-family:inherit;
+  }
+  #bgm:hover{border-color:#ffd23a;color:#ffd23a}
+
+  /* タイトル */
+  .title-screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:14px;padding:28px 20px 24px;overflow-y:auto;background:#0a0014}
+  .title-bg-img{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.45;filter:saturate(.9)}
+  .title-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.7) 0%,rgba(0,0,0,.55) 25%,rgba(0,0,0,.55) 75%,rgba(0,0,0,.85) 100%);z-index:1}
+  .title-top,.title-bottom{position:relative;z-index:2;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center}
+  .title-logo{font-size:46px;font-weight:900;color:#ff5a9a;letter-spacing:.12em;margin-bottom:4px;animation:pulse 2s ease-in-out infinite;line-height:1;
+    text-shadow:
+      -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000,
+      4px 4px 0 #5af0e0,
+      0 0 20px #ff5a9a;}
+  .title-sub{font-size:13px;color:#ffd23a;letter-spacing:.2em;font-weight:bold;margin-bottom:16px;
+    text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 10px #ffd23a;}
+  .title-hook{font-size:34px;font-weight:900;color:#fff;background:linear-gradient(90deg,rgba(217,46,46,.95),rgba(255,90,154,.95),rgba(255,210,58,.95));padding:14px 32px;border-radius:18px;letter-spacing:.04em;margin-bottom:10px;border:3px solid #fff;text-shadow:3px 3px 0 #000,-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000;animation:hookPulse 1.8s ease-in-out infinite;box-shadow:0 0 32px rgba(255,90,154,.7),6px 6px 0 #000;line-height:1.15}
+  @keyframes hookPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04);filter:brightness(1.15)}}
+  .title-hook-sub{font-size:14px;color:#ff8ad0;font-style:italic;margin-bottom:6px;text-shadow:1px 1px 0 #000,0 0 8px #ff5a9a;letter-spacing:.05em}
+  @keyframes pulse{50%{filter:brightness(1.25)}}
+  .title-demo{width:100%;max-width:560px;background:rgba(0,0,0,.88);border:4px solid #fff;border-radius:14px;padding:14px 16px;backdrop-filter:blur(6px);box-shadow:6px 6px 0 #000,0 0 24px rgba(255,90,154,.5);margin-bottom:14px;position:relative}
+  .title-demo::before{content:"⚡実演";position:absolute;top:-12px;left:14px;background:#ffd23a;color:#000;font-size:11px;font-weight:900;padding:3px 10px;border:2px solid #000;border-radius:10px;letter-spacing:.1em}
+  .demo-label{font-size:10px;color:#ff8ad0;letter-spacing:.25em;text-align:center;margin-bottom:8px;font-weight:bold}
+  .demo-quest{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+  .demo-icon{font-size:32px;flex-shrink:0;line-height:1}
+  .demo-text{background:#fff7e0;color:#000;padding:10px 14px;border-radius:10px;font-size:14px;line-height:1.5;flex:1;font-weight:900;border:3px solid #000;position:relative;box-shadow:3px 3px 0 #ff5a9a}
+  .demo-choices{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+  .demo-choice{padding:8px 12px;border-radius:8px;font-size:12px;font-weight:900;border:3px solid;text-align:left;line-height:1.3;box-shadow:2px 2px 0 #000}
+  .demo-choice.ok{background:#5af0a0;color:#000;border-color:#000}
+  .demo-choice.ng{background:#ff5050;color:#fff;border-color:#000;text-shadow:1px 1px 0 #000}
+  .demo-inner{background:rgba(255,90,154,.2);border:2px solid #ff5a9a;border-left:6px solid #ff5a9a;padding:8px 12px;border-radius:6px;color:#ff8ad0;font-size:12px;font-style:italic;text-align:left;font-weight:bold}
+  .title-specs{display:flex;justify-content:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .title-specs span{background:rgba(0,0,0,.75);padding:6px 14px;border-radius:18px;font-size:12px;color:#ffd23a;border:1px solid #ffd23a;font-weight:bold;letter-spacing:.05em}
+  /* パターン切替バー */
+  .pattern-bar{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);border:2px solid #ffd23a;border-radius:24px;padding:6px 10px;z-index:200;display:flex;gap:6px;backdrop-filter:blur(8px)}
+  .pattern-bar .label{font-size:10px;color:#ffd23a;font-weight:bold;padding:6px 8px;letter-spacing:.1em}
+  .pattern-bar button{font-family:inherit;font-size:11px;font-weight:bold;padding:6px 14px;background:#3a1a3a;color:#ff8ad0;border:2px solid #5a2a5a;border-radius:18px;cursor:pointer}
+  .pattern-bar button.active{background:#ff5a9a;color:#fff;border-color:#fff;box-shadow:0 0 12px rgba(255,90,154,.6)}
+  /* コピー切替バー（通常は非表示、?dev で表示） */
+  .copy-bar{display:none;position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);border:2px solid #5af0e0;border-radius:24px;padding:6px 8px;z-index:200;gap:4px;backdrop-filter:blur(8px);align-items:center}
+  body.dev-mode .copy-bar{display:flex}
+  .copy-bar .label{font-size:10px;color:#5af0e0;font-weight:bold;padding:0 8px;letter-spacing:.1em}
+  .copy-bar button{font-family:inherit;font-size:11px;font-weight:bold;width:28px;height:28px;background:#1a2a3a;color:#5af0e0;border:2px solid #2a4a5a;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+  .copy-bar button.active{background:#5af0e0;color:#000;border-color:#fff;box-shadow:0 0 10px rgba(90,240,224,.6)}
+  .copy-bar .name{font-size:11px;color:#fff;padding:0 8px;font-style:italic;min-width:120px;text-align:center;letter-spacing:.05em}
+  .copy-bar .edit-btn{font-family:inherit;font-size:11px;padding:6px 10px;background:#1a1a3a;color:#ffd23a;border:2px solid #ffd23a;border-radius:18px;cursor:pointer;font-weight:bold;margin-left:6px}
+  .copy-bar .edit-btn:hover{background:#ffd23a;color:#000}
+  /* タイトル画面常設の編集ボタン */
+  .edit-floating{position:fixed;bottom:14px;right:14px;background:rgba(0,0,0,.8);color:#ffd23a;border:2px solid #ffd23a;border-radius:24px;padding:8px 16px;font-size:13px;font-weight:bold;cursor:pointer;z-index:200;font-family:inherit;letter-spacing:.05em;box-shadow:3px 3px 0 #000}
+  .edit-floating:hover{background:#ffd23a;color:#000}
+  /* パターンA：コミック調 */
+  .title-comic-mode{position:absolute;inset:0;overflow-y:auto;background:linear-gradient(180deg,#0a0014,#2a0a3a,#1a0014);padding:10px;color:#fff}
+  .title-comic-mode .comic-wrap{max-width:980px;margin:0 auto}
+  .title-comic-mode .start-btn-comic{cursor:pointer;animation:startPulse 1.4s ease-in-out infinite;background:radial-gradient(circle at 30% 30%,#ff5050,#8a0000);border:4px solid #fff;border-radius:14px;padding:8px 4px;text-align:center;box-shadow:5px 5px 0 #000,0 0 16px rgba(255,80,80,.6);transform:rotate(-3deg);position:relative}
+  .title-comic-mode .start-btn-comic .lbl{font-size:14px;font-weight:900;color:#fff;text-shadow:2px 2px 0 #000;letter-spacing:.1em}
+  .title-comic-mode .start-btn-comic .val{font-size:32px;font-weight:900;color:#fff;text-shadow:3px 3px 0 #000;line-height:1;font-family:"Yu Gothic UI",sans-serif}
+  .title-comic-mode .start-btn-comic .suf{font-size:11px;color:#fff;text-shadow:2px 2px 0 #000}
+  .title-comic-mode .start-btn-comic:hover{filter:brightness(1.2)}
+  .title-comic-mode .start-btn-comic:active{transform:rotate(0deg) scale(.96)}
+  @keyframes startPulse{0%,100%{transform:rotate(-3deg) scale(1)}50%{transform:rotate(2deg) scale(1.06)}}
+  .title-comic-mode .comic-title-box h1{font-size:38px}
+  .title-comic-mode .comic-title-box .sub{font-size:14px;margin-top:4px}
+  .title-comic-mode .comic-title-box .hook{font-size:15px;color:#ff8ad0;margin-top:8px;font-weight:bold;text-shadow:1px 1px 0 #000}
+  .title-comic-mode .comic-cust .face img{display:block}
+  .title-comic-mode .comic-bubble{font-size:18px}
+  .title-comic-mode .demo-cycle{transition:opacity .4s}
+  .title-comic-mode .demo-cycle.fade{opacity:0}
+  /* パターンC：ミニマル映画ポスター */
+  .title-poster{position:absolute;inset:0;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center}
+  .title-poster .poster-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.7;filter:saturate(1.1)}
+  .title-poster .poster-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,.85) 100%)}
+  .title-poster .poster-content{position:relative;z-index:2;text-align:center;padding:20px}
+  .title-poster .poster-logo{font-size:96px;font-weight:900;color:#ff5a9a;letter-spacing:.1em;text-shadow:-4px -4px 0 #000,4px -4px 0 #000,-4px 4px 0 #000,4px 4px 0 #000,8px 8px 0 #5af0e0,0 0 30px #ff5a9a;line-height:1;margin-bottom:8px}
+  .title-poster .poster-tag{font-size:18px;color:#ffd23a;letter-spacing:.3em;font-weight:bold;text-shadow:2px 2px 0 #000;margin-bottom:6px}
+  .title-poster .poster-catch{font-size:22px;color:#fff;font-weight:900;background:rgba(0,0,0,.6);padding:8px 24px;border-top:3px solid #ff5a9a;border-bottom:3px solid #ff5a9a;display:inline-block;margin:18px 0;letter-spacing:.05em;text-shadow:1px 1px 0 #000}
+  .title-poster .poster-spec{font-size:13px;color:#aaa;font-style:italic;margin-bottom:24px}
+  .title-poster .poster-btn{font-family:inherit;font-size:22px;font-weight:900;padding:14px 56px;background:linear-gradient(180deg,#ff5a9a,#d92e6e);color:#fff;border:3px solid #fff;border-radius:40px;cursor:pointer;letter-spacing:.15em;box-shadow:5px 5px 0 #000,0 0 28px rgba(255,90,154,.6);animation:posterPulse 1.5s ease-in-out infinite;text-shadow:2px 2px 0 #000}
+  .title-poster .poster-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #000}
+  @keyframes posterPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05);filter:brightness(1.2)}}
+  .title-poster .poster-sub-btn{margin-top:14px;font-family:inherit;font-size:13px;padding:6px 18px;background:transparent;color:#5af0e0;border:1px solid #5af0e0;border-radius:18px;cursor:pointer}
+  /* 浮かぶオノマトペ（旧版、未使用に） */
+  .fx-float{position:absolute;width:160px;height:160px;opacity:.7;pointer-events:none;z-index:3;filter:drop-shadow(3px 3px 0 #000);display:none}
+  .fx-f1{top:6%;left:1%;animation:fxFloat1 4.5s ease-in-out infinite}
+  .fx-f2{top:14%;right:1%;animation:fxFloat2 4s ease-in-out infinite;animation-delay:.8s}
+  .fx-f3{bottom:24%;left:2%;animation:fxFloat3 5s ease-in-out infinite;animation-delay:1.5s;width:130px;height:130px}
+  .fx-f4{bottom:18%;right:2%;animation:fxFloat4 4.2s ease-in-out infinite;animation-delay:2.2s;width:130px;height:130px}
+  @keyframes fxFloat1{0%,100%{transform:translateY(0) rotate(-8deg) scale(1)}50%{transform:translateY(-18px) rotate(5deg) scale(1.08)}}
+  @keyframes fxFloat2{0%,100%{transform:translateY(0) rotate(6deg) scale(1)}50%{transform:translateY(-20px) rotate(-4deg) scale(.95)}}
+  @keyframes fxFloat3{0%,100%{transform:translateY(0) rotate(-5deg) scale(1)}50%{transform:translateY(15px) rotate(8deg) scale(1.05)}}
+  @keyframes fxFloat4{0%,100%{transform:translateY(0) rotate(7deg) scale(1)}50%{transform:translateY(18px) rotate(-6deg) scale(.92)}}
+  /* ベストスコアバッジ */
+  .best-badge{position:absolute;top:14px;right:14px;background:linear-gradient(135deg,#ffd23a,#d4a020);color:#000;padding:6px 14px 6px 18px;border:3px solid #000;border-radius:12px;font-weight:900;font-size:13px;letter-spacing:.05em;z-index:4;box-shadow:3px 3px 0 #000;transform:rotate(3deg)}
+  .best-badge::before{content:"👑 ";font-size:14px}
+  .best-badge .v{color:#d92e2e;font-family:Consolas,monospace;font-size:15px;margin-left:4px}
+  /* チャレンジバナー */
+  .challenge-banner{background:linear-gradient(90deg,#d92e2e,#ff5a9a);color:#fff;font-weight:900;padding:8px 24px;border:3px solid #000;border-radius:24px;font-size:14px;letter-spacing:.05em;text-shadow:2px 2px 0 #000;box-shadow:4px 4px 0 #000;margin-bottom:8px;transform:rotate(-1deg);text-align:center}
+  /* 客タイプ並び */
+  .title-cast{display:flex;justify-content:center;gap:6px;margin-bottom:10px;flex-wrap:wrap;max-width:520px}
+  .title-cast-item{background:rgba(0,0,0,.8);border:3px solid #fff;border-radius:10px;padding:6px 8px;font-size:11px;color:#ff8ad0;text-align:center;min-width:68px;box-shadow:2px 2px 0 #000}
+  .title-cast-item .emo{font-size:22px;display:block;line-height:1.2}
+  .title-cast-item .lbl{font-size:9px;color:#aaa;letter-spacing:0;display:block;margin-top:2px}
+  /* デモボックス内のトランジション */
+  .demo-quest, .demo-choices, .demo-inner { transition: opacity .35s }
+  .demo-fade { opacity: 0 }
+  /* ハイスコア風バナー */
+  .title-banner{background:linear-gradient(90deg,#000,rgba(255,90,154,.4),#000);padding:8px 18px;font-size:13px;color:#ffd23a;text-align:center;border-top:1px solid #ff5a9a;border-bottom:1px solid #ff5a9a;letter-spacing:.05em;font-weight:bold;animation:bannerScroll 8s linear infinite;background-size:200% 100%}
+  @keyframes bannerScroll{0%{background-position:0% 0}100%{background-position:200% 0}}
+  .title-btn{font-family:inherit;font-size:20px;font-weight:900;padding:12px 50px;background:linear-gradient(180deg,#ff5a9a,#d92e6e);color:#fff;border:3px solid #000;border-radius:14px;cursor:pointer;letter-spacing:.12em;box-shadow:4px 4px 0 #000,0 6px 24px rgba(255,90,154,.6);animation:pulse 1.5s ease-in-out infinite;text-shadow:2px 2px 0 #000;margin-top:6px}
+  .title-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #8a1040}
+  .title-credit{margin-top:14px;color:#888;font-size:10px;font-style:italic;text-shadow:0 1px 2px #000}
+
+  /* 動画 */
+  .opening-screen{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000;flex-direction:column}
+  .opening-screen video{width:100%;height:100%;object-fit:contain}
+  .opening-placeholder{text-align:center;color:#fff;padding:40px;background:radial-gradient(circle,#3a0a3a 0%,#000 100%);width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .opening-placeholder .icon{font-size:120px;margin-bottom:20px;animation:floaty 2s ease-in-out infinite}
+  .opening-placeholder .label{font-size:14px;color:#ff8ad0;letter-spacing:.2em;margin-bottom:10px}
+  .opening-placeholder .hint{font-size:12px;color:#666;font-style:italic;margin-top:30px;max-width:500px;line-height:1.7}
+
+  /* 紙芝居 */
+  .kami-screen{position:absolute;inset:0;display:flex;flex-direction:column;background:#000;cursor:pointer}
+  .kami-img-wrap{flex:1;display:flex;align-items:center;justify-content:center;background:#000;position:relative;overflow:hidden}
+  .kami-img{max-width:100%;max-height:100%;object-fit:contain;animation:fadeIn .6s ease-out}
+  .kami-placeholder{width:80%;max-width:600px;aspect-ratio:1/1;background:linear-gradient(135deg,#3a0a3a,#1a0014,#5a1a3a);border:2px dashed #ff5a9a;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#ff8ad0;animation:fadeIn .6s ease-out}
+  .kami-placeholder.go{background:linear-gradient(135deg,#1a0014,#000,#3a0a1a);border-color:#888;color:#888}
+  .kami-placeholder .ico{font-size:120px;margin-bottom:20px}
+  .kami-placeholder .num{font-size:14px;color:#888;letter-spacing:.2em;font-family:Consolas,monospace}
+  .kami-placeholder .filename{font-size:11px;color:#555;margin-top:6px;font-family:Consolas,monospace}
+  @keyframes fadeIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+  .kami-caption{background:linear-gradient(180deg,rgba(0,0,0,.75),rgba(0,0,0,.97));padding:24px 36px 28px;text-align:left;border-top:2px solid #ff5a9a;min-height:200px;max-height:45vh;overflow-y:auto}
+  .kami-caption.go{border-top-color:#888}
+  .kami-caption .text{font-size:16px;color:#fff;line-height:1.85;text-shadow:0 0 4px rgba(255,90,154,.5);animation:typeIn .8s ease-out;max-width:780px;margin:0 auto}
+  .kami-caption .hint{margin-top:12px;font-size:11px;color:#888;font-style:italic;animation:blink 1.5s ease-in-out infinite}
+  .kami-caption .chapter{font-size:10px;color:#ffd23a;letter-spacing:.2em;margin-bottom:6px;font-family:Consolas,monospace}
+  @keyframes typeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes blink{50%{opacity:.4}}
+
+  /* ゲーム */
+  .game-screen{position:absolute;inset:0;overflow-y:auto;background:linear-gradient(180deg,#0a0014,#2a0a3a,#3a0a2a);padding:12px;display:flex;flex-direction:column;align-items:center}
+  .game-top{display:flex;gap:10px;width:100%;max-width:680px;align-items:flex-start;margin-bottom:6px}
+  .girl-portrait{width:96px;height:96px;border-radius:12px;background:#1a0a1a;border:2px solid #ff5a9a;display:flex;align-items:center;justify-content:center;font-size:48px;flex-shrink:0;overflow:hidden;position:relative}
+  .girl-portrait img{width:100%;height:100%;object-fit:cover}
+  .girl-portrait .state{position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:9px;color:#fff;background:rgba(0,0,0,.6);padding:1px 0}
+  .game-title-row{flex:1}
+  .game-title-row h1{font-size:18px;color:#ff8ad0;text-shadow:0 0 12px #ff5a9a;margin-bottom:2px}
+  .game-title-row .sub{color:#888;font-size:10px;font-style:italic;margin-bottom:6px}
+  .hud{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:#0a0014;padding:8px 12px;border-radius:10px;border:2px solid #ff5a9a}
+  .h-item{text-align:center}
+  .h-lbl{font-size:9px;color:#aaa;letter-spacing:.05em}
+  .h-val{font-size:15px;font-weight:bold;font-family:Consolas,monospace}
+  .h-val.money{color:#ffd23a}
+  .h-val.mental{color:#5af0a0}
+  .h-val.quota{color:#ff5a9a}
+  .h-val.cust{color:#aaa}
+  .h-val.combo{color:#ff5a9a}
+  .h-val.time{color:#5af0a0}
+  .quota-bar{width:100%;max-width:680px;height:5px;background:#1a0a1a;border-radius:3px;overflow:hidden;margin-bottom:8px}
+  .quota-bar .fill{height:100%;background:linear-gradient(90deg,#ff5a9a,#ffd23a);transition:width .3s}
+  .qbar-wrap{position:absolute;top:6px;right:14px;width:140px;height:10px;background:rgba(0,0,0,.6);border:1px solid #5a2a5a;border-radius:6px;overflow:hidden}
+  .qbar-fill{height:100%;background:linear-gradient(90deg,#5af0a0,#ffd23a,#ff5050);transition:width .1s linear;width:100%}
+  .qbar-wrap.warn{animation:blink .3s linear infinite}
+  .choice.correct{background:#5af0a0!important;color:#000!important;border-color:#5af0a0!important;animation:shake .15s}
+  .choice.wrong{background:#ff5050!important;color:#fff!important;border-color:#ff5050!important;animation:shake .15s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+  .stage{width:100%;max-width:680px;background:#1a0014;border-radius:14px;padding:12px;border:2px solid #ff5a9a}
+  .customer{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#2a0a2a;border-radius:12px;margin-bottom:8px}
+  .c-face{width:64px;height:64px;border-radius:10px;background:#0a0014;border:1px solid #ff5a9a;display:flex;align-items:center;justify-content:center;font-size:38px;flex-shrink:0;overflow:hidden}
+  .c-face img{width:100%;height:100%;object-fit:cover}
+  .c-info{flex:1}
+  .c-name{font-size:13px;font-weight:bold;color:#ff8ad0}
+  .c-tag{font-size:10px;color:#aaa;margin-top:2px}
+  .c-turn{font-size:10px;color:#ffd23a;font-family:Consolas,monospace}
+  .c-bubble{background:#fff7e0;color:#000;padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.5;min-height:50px;position:relative;border-top:4px solid #5a5a5a;margin-bottom:10px}
+  .c-bubble::before{content:"";position:absolute;top:-14px;left:30px;border:6px solid transparent;border-bottom-color:#5a5a5a}
+  .inner{background:rgba(255,90,154,.1);border-left:3px solid #ff5a9a;padding:7px 12px;font-size:12px;color:#ff8ad0;font-style:italic;margin-bottom:8px;border-radius:4px}
+  .inner::before{content:"💭 ";opacity:.6}
+  .choices{display:grid;grid-template-columns:1fr;gap:5px;margin-bottom:8px}
+  button.choice{font-family:inherit;font-size:13px;text-align:left;padding:9px 14px;border:2px solid #5a2a5a;border-radius:10px;background:#1a0a1a;color:#fff;cursor:pointer;transition:all .12s;line-height:1.4}
+  button.choice:hover:not(:disabled){background:#3a1a3a;border-color:#ff5a9a}
+  button.choice .lip{display:block;font-weight:bold}
+  button.choice .think{display:block;font-size:11px;color:#888;font-style:italic;margin-top:2px}
+  button.choice:hover:not(:disabled) .think{color:#ff8ad0}
+  .actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  button.act{font-family:inherit;font-size:11px;font-weight:bold;padding:9px 4px;border:none;border-radius:10px;cursor:pointer;line-height:1.3}
+  .btn-drink{background:linear-gradient(180deg,#5af0e0,#2a8aa0);color:#000;box-shadow:0 3px 0 #1a4a5a}
+  .btn-cham{background:linear-gradient(180deg,#ffd23a,#d4a020);color:#000;box-shadow:0 3px 0 #8a6010}
+  .btn-bill{background:linear-gradient(180deg,#ff5a9a,#d92e6e);color:#fff;box-shadow:0 3px 0 #8a1040}
+  button.act:active{transform:translateY(2px)}
+  .log{margin-top:8px;font-size:11px;color:#888;font-style:italic;min-height:16px;text-align:center}
+
+  /* リアクション・演出オーバーレイ */
+  .react{position:fixed;font-size:24px;font-weight:bold;pointer-events:none;animation:floatUp 1.2s ease-out forwards;z-index:99;text-shadow:0 0 6px rgba(0,0,0,.8)}
+  @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(.6)}30%{transform:scale(1.2)}100%{opacity:0;transform:translateY(-80px) scale(1)}}
+  .effect-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7);z-index:200;animation:fadeIn .25s ease-out;pointer-events:none}
+  .effect-overlay img,.effect-overlay .efx-emoji{max-width:60%;max-height:60%;animation:effectPop .8s ease-out}
+  .effect-overlay .efx-emoji{font-size:200px;text-align:center}
+  .effect-overlay .efx-text{position:absolute;bottom:18%;color:#ffd23a;font-size:36px;font-weight:bold;text-shadow:0 0 14px #ff5a9a;animation:effectPop .8s ease-out}
+  @keyframes effectPop{0%{transform:scale(.4) rotate(-8deg);opacity:0}30%{transform:scale(1.15) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0deg);opacity:1}}
+
+  /* クレジット */
+  .credit-screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;padding:40px;overflow:hidden}
+  .credit-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.35;filter:brightness(.5) saturate(.8)}
+  .credit-overlay{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,.5) 0%,rgba(0,0,0,.92) 80%)}
+  .credit-screen > *:not(.credit-bg):not(.credit-overlay){position:relative;z-index:2}
+  .credit-screen .grade{font-size:80px;margin-bottom:12px;animation:floaty 2s ease-in-out infinite;filter:drop-shadow(0 0 16px #000)}
+  .credit-screen .grade-img{width:160px;height:160px;border-radius:50%;object-fit:cover;border:4px solid #ffd23a;box-shadow:0 0 32px rgba(255,210,58,.6),0 8px 24px rgba(0,0,0,.6);margin-bottom:14px;animation:floaty 2.5s ease-in-out infinite;display:block}
+  .credit-screen h2{font-size:32px;color:#ffd23a;text-shadow:0 0 16px #ffd23a,2px 2px 0 #000;margin-bottom:18px}
+  .credit-screen .nums{color:#ccc;font-size:14px;line-height:2;margin-bottom:24px;text-align:center}
+  .credit-screen .nums b{color:#ffd23a}
+  .credit-screen .msg{color:#aaa;font-style:italic;font-size:13px;margin-bottom:30px;text-align:center;max-width:500px;line-height:1.7}
+  .credit-screen button{font-family:inherit;font-size:16px;font-weight:bold;padding:14px 36px;background:#ff5a9a;color:#fff;border:none;border-radius:12px;cursor:pointer;box-shadow:0 4px 0 #8a1040}
+  .credit-screen button:active{transform:translateY(2px)}
+
+  /* 編集モード */
+  .title-edit-btn{margin-top:10px;font-family:inherit;font-size:14px;padding:8px 20px;background:rgba(0,0,0,.7);color:#5af0e0;border:2px solid #5af0e0;border-radius:18px;cursor:pointer;letter-spacing:.05em}
+  .title-edit-btn:hover{background:#5af0e0;color:#000}
+  .edit-screen{position:absolute;inset:0;overflow-y:auto;background:#1a0014;padding:14px;color:#fff;font-size:13px}
+  .edit-header{position:sticky;top:0;background:#0a0014;padding:12px 16px;border:2px solid #ff5a9a;border-radius:12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;z-index:10;flex-wrap:wrap;gap:8px}
+  .edit-header h2{font-size:18px;color:#ff8ad0}
+  .edit-header .btns{display:flex;gap:6px;flex-wrap:wrap}
+  .edit-header button{font-family:inherit;font-size:12px;font-weight:bold;padding:8px 14px;border:none;border-radius:8px;cursor:pointer}
+  .btn-back{background:#5a2a5a;color:#fff}
+  .btn-reset{background:#888;color:#fff}
+  .btn-save{background:#5af0a0;color:#000}
+  .edit-section{margin-bottom:18px;background:rgba(0,0,0,.3);padding:12px;border-radius:10px;border:1px solid #5a2a5a}
+  .edit-section h3{font-size:15px;color:#ffd23a;margin-bottom:10px;letter-spacing:.05em;border-bottom:1px dashed #5a2a5a;padding-bottom:6px}
+  .edit-item{display:grid;grid-template-columns:28px 120px 1fr 40px;gap:8px;align-items:start;padding:8px;background:rgba(0,0,0,.4);border-radius:8px;margin-bottom:6px;border:1px solid #3a1a3a}
+  .edit-item-num{font-family:Consolas,monospace;font-size:14px;font-weight:bold;color:#ff8ad0;text-align:center;padding-top:6px}
+  .edit-item-img{width:120px;height:80px;background:#000;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#666;font-size:10px;border:1px solid #5a2a5a;flex-shrink:0}
+  .edit-item-img img{width:100%;height:100%;object-fit:cover}
+  .edit-item-controls{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .edit-item-top{display:flex;gap:4px}
+  .edit-item-controls select,.edit-item-controls textarea,.edit-item-controls input{font-family:inherit;background:#0a0014;color:#fff;border:1px solid #5a2a5a;border-radius:5px;padding:5px 7px;font-size:12px;width:100%}
+  .edit-item-controls .edit-ico{width:64px;flex-shrink:0}
+  .edit-item-controls .edit-file{flex:1}
+  .edit-item-controls textarea{resize:vertical;min-height:42px;line-height:1.4}
+  .edit-item-buttons{display:flex;flex-direction:column;gap:4px;justify-content:center}
+  .edit-item-buttons button{width:34px;height:30px;background:#3a1a3a;color:#fff;border:1px solid #5a2a5a;border-radius:5px;cursor:pointer;font-family:inherit;font-size:14px;padding:0}
+  .edit-item-buttons button:hover:not(:disabled){background:#5a2a5a;border-color:#ff5a9a}
+  .edit-item-buttons button:disabled{opacity:.3;cursor:not-allowed}
+  .edit-toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#5af0a0;color:#000;padding:10px 28px;border-radius:24px;font-weight:bold;z-index:1000;animation:fadeIn .25s}
+  /* コピーエディタ */
+  .cep-row{display:flex;gap:10px;align-items:center;margin:5px 0}
+  .cep-row label{font-size:11px;color:#ffd23a;width:84px;font-weight:bold;flex-shrink:0;letter-spacing:.05em}
+  .cep-fld{font-family:inherit;background:#0a0014;color:#fff;border:1px solid #5a2a5a;padding:6px 10px;border-radius:5px;font-size:13px;flex:1;width:100%}
+  textarea.cep-fld{min-height:36px;resize:vertical;line-height:1.5}
+  .cep-fld.big{font-size:15px;font-weight:bold;color:#ffd23a;border-color:#ffd23a}
+
+  /* ========= コミック調ゲーム画面 ========= */
+  .comic-screen{position:absolute;inset:0;overflow-y:auto;background:linear-gradient(180deg,#0a0014,#2a0a3a,#1a0014);padding:10px;color:#fff}
+  .comic-wrap{max-width:1200px;margin:0 auto}
+  .comic-top{display:grid;grid-template-columns:140px 1fr 160px;gap:8px;margin-bottom:8px;align-items:stretch}
+  .comic-girl{background:linear-gradient(135deg,#ff5a9a22,#5af0e022);border:3px solid #fff;border-radius:12px;padding:6px;text-align:center;box-shadow:0 0 12px rgba(255,90,154,.4);position:relative}
+  .comic-girl .face-wrap{width:100%;aspect-ratio:1/1;background:#000;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:56px}
+  .comic-girl .face-wrap img{width:100%;height:100%;object-fit:cover}
+  .comic-girl .state{font-size:13px;font-weight:900;color:#fff;background:#000;padding:2px 8px;border-radius:6px;margin-top:4px;display:inline-block;border:1px solid #ff5a9a}
+  .comic-title-box{background:linear-gradient(180deg,#1a0a1a,#000);border:3px solid #ffd23a;padding:10px 14px;border-radius:10px;text-align:center;position:relative;display:flex;flex-direction:column;justify-content:center}
+  .comic-title-box h1{font-size:26px;font-weight:900;color:#fff;text-shadow:-3px -3px 0 #000,3px -3px 0 #000,-3px 3px 0 #000,3px 3px 0 #000,5px 5px 0 #ff5a9a;letter-spacing:.05em;line-height:1.1}
+  .comic-title-box .sub{font-size:11px;color:#ffd23a;margin-top:6px;letter-spacing:.05em}
+  .comic-time{background:radial-gradient(circle at 30% 30%,#ff5050,#8a0000);border:4px solid #fff;border-radius:14px;padding:6px 4px;text-align:center;transform:rotate(-3deg);box-shadow:5px 5px 0 #000,0 0 16px rgba(255,80,80,.6);position:relative}
+  .comic-time .lbl{font-size:13px;font-weight:900;color:#fff;text-shadow:2px 2px 0 #000;letter-spacing:.1em}
+  .comic-time .val{font-size:46px;font-weight:900;color:#fff;text-shadow:3px 3px 0 #000;line-height:1;font-family:Consolas,monospace}
+  .comic-time .suf{font-size:13px;color:#fff;text-shadow:2px 2px 0 #000}
+  .comic-time.warn{animation:shakeWarn .25s linear infinite}
+  @keyframes shakeWarn{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(2deg) scale(1.05)}}
+
+  .comic-hud{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:#000;border:3px solid #fff;border-radius:10px;padding:8px 12px;margin-bottom:10px;box-shadow:0 4px 0 #ff5a9a}
+  .comic-hud .item{text-align:center}
+  .comic-hud .item .l{font-size:10px;letter-spacing:.18em;color:#aaa;font-weight:bold}
+  .comic-hud .item .v{font-size:22px;font-weight:900;font-family:Consolas,monospace;line-height:1.1}
+  .comic-hud .v.score{color:#ffd23a;text-shadow:2px 2px 0 #000}
+  .comic-hud .v.combo{color:#ff5a9a;text-shadow:2px 2px 0 #000}
+  .comic-hud .v.bonus{color:#5af0e0;text-shadow:2px 2px 0 #000;font-size:18px}
+  .comic-hud .v.quota{color:#ff8ad0}
+  .comic-hud .item.bonus-flash{animation:bonusFlash .5s ease-out}
+  @keyframes bonusFlash{0%{transform:scale(.5);filter:brightness(2)}100%{transform:scale(1);filter:brightness(1)}}
+
+  .comic-stage{display:grid;grid-template-columns:180px 1fr;gap:12px;background:linear-gradient(135deg,#3a0a3a,#1a0014);border:3px solid #fff;border-radius:12px;padding:12px;margin-bottom:10px;align-items:stretch}
+  .comic-cust{background:rgba(0,0,0,.5);border:2px solid #ff5a9a;border-radius:10px;overflow:hidden;text-align:center;display:flex;flex-direction:column}
+  .comic-cust .face{flex:1;min-height:140px;display:flex;align-items:center;justify-content:center;font-size:72px;background:#000}
+  .comic-cust .face img{width:100%;height:100%;object-fit:cover}
+  .comic-cust .name{font-size:16px;font-weight:900;color:#fff;padding:4px 6px;background:#000;text-shadow:2px 2px 0 #ff5a9a;border-top:2px solid #ff5a9a}
+  .comic-cust .tag{font-size:10px;color:#aaa;padding:2px 6px 6px;background:#000}
+  .comic-right{display:flex;flex-direction:column;gap:8px;min-width:0}
+  .comic-bubble{background:#fff;border:4px solid #000;border-radius:14px;padding:14px 18px;position:relative;color:#000;font-size:18px;font-weight:900;line-height:1.5;flex:1;min-height:80px}
+  .comic-bubble::before{content:"";position:absolute;left:-20px;top:30px;border:10px solid transparent;border-right-color:#000}
+  .comic-bubble::after{content:"";position:absolute;left:-12px;top:33px;border:7px solid transparent;border-right-color:#fff}
+  .comic-bar-row{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.55);border:2px solid #fff;border-radius:10px;padding:6px 12px}
+  .comic-bar-row .clock{font-size:24px;flex-shrink:0}
+  .comic-bar-row .lbl{font-size:11px;color:#ffd23a;font-weight:900;letter-spacing:.05em;flex-shrink:0}
+  .comic-bar-row .bar{flex:1;height:14px;background:#000;border:2px solid #fff;border-radius:7px;overflow:hidden}
+  .comic-bar-row .bar .fill{height:100%;background:linear-gradient(90deg,#5af0a0,#ffd23a,#ff5050);transition:width .1s linear;width:100%}
+  .comic-bar-row .hurry{font-size:13px;font-weight:900;color:#ff2020;text-shadow:1px 1px 0 #000;display:none;letter-spacing:.05em}
+  .comic-bar-row.warn .bar{animation:blink .3s linear infinite}
+  .comic-bar-row.warn .hurry{display:inline-block;animation:shakeText .15s linear infinite}
+  @keyframes shakeText{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
+
+  .comic-choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .comic-choice{border:3px solid #fff;border-radius:10px;padding:10px 14px 10px 38px;cursor:pointer;color:#fff;font-weight:bold;text-align:left;position:relative;font-family:inherit;font-size:14px;line-height:1.4;transition:transform .1s,box-shadow .1s;box-shadow:3px 3px 0 #000}
+  .comic-choice:nth-child(1){background:linear-gradient(135deg,#d92e2e,#7a1010)}
+  .comic-choice:nth-child(2){background:linear-gradient(135deg,#9a3aa0,#5a1a5a)}
+  .comic-choice:nth-child(3){background:linear-gradient(135deg,#3a5af0,#1a2a8a)}
+  .comic-choice:nth-child(4){background:linear-gradient(135deg,#ffd23a,#aa7010);color:#000}
+  .comic-choice .num{position:absolute;top:-8px;left:-8px;width:32px;height:32px;background:#fff;color:#000;border:3px solid #000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;box-shadow:2px 2px 0 #ff5a9a}
+  .comic-choice .lip{display:block;font-size:15px;font-weight:900;text-shadow:1px 1px 0 #000;margin-bottom:4px}
+  .comic-choice:nth-child(4) .lip{text-shadow:1px 1px 0 #fff}
+  .comic-choice .think{display:block;font-size:11px;font-style:italic;background:rgba(0,0,0,.5);padding:3px 8px;border-radius:6px;width:fit-content}
+  .comic-choice:nth-child(4) .think{background:rgba(0,0,0,.65);color:#fff}
+  .comic-choice:hover:not(:disabled){transform:translate(-2px,-2px);box-shadow:5px 5px 0 #000}
+  .comic-choice.correct{background:linear-gradient(135deg,#5af0a0,#1a8a4a)!important;color:#000!important;animation:shake .15s}
+  .comic-choice.wrong{background:linear-gradient(135deg,#ff2020,#5a0000)!important;color:#fff!important;animation:shake .15s}
+
+  .comic-footer{text-align:center;background:#000;border:2px solid #ffd23a;border-radius:10px;padding:10px;margin-top:10px;color:#fff;font-size:14px;font-weight:bold;letter-spacing:.05em;text-shadow:1px 1px 0 #000}
+  .comic-footer b{color:#ff5050;font-size:16px}
+  .comic-log{margin-top:6px;font-size:11px;color:#aaa;font-style:italic;text-align:center;min-height:16px}
+
+  /* ========= コミック演出オーバーレイ ========= */
+  .fx-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:300;animation:fxIn .2s ease-out}
+  .fx-overlay img{max-width:70vmin;max-height:70vmin;animation:fxPop .55s ease-out;filter:drop-shadow(6px 6px 0 rgba(0,0,0,.7))}
+  .fx-overlay.fade{animation:fxOut .35s forwards}
+  @keyframes fxIn{from{opacity:0}to{opacity:1}}
+  @keyframes fxPop{0%{transform:scale(.4) rotate(-12deg)}25%{transform:scale(1.2) rotate(5deg)}55%{transform:scale(.95) rotate(-2deg)}100%{transform:scale(1) rotate(0)}}
+  @keyframes fxOut{to{opacity:0;transform:scale(1.15)}}
+</style>
+</head>
+<body>
+
+<button id="bgm">🎵 BGM ON</button>
+<button id="skip" class="hide">スキップ ⏭ (Esc)</button>
+
+<div id="root"></div>
+
+<script>
+// =========================================================================
+// 画像パスマップ
+// =========================================================================
+const IMG = {
+  title: '画像/title.png',
+  girlGood: '画像/嬢_営業スマイル.png',
+  girlMid:  '画像/嬢_心の闇.png',
+  girlBad:  '画像/嬢_疲弊裏顔.png',
+  cust: {
+    説教: '画像/客_説教おじさん.png',
+    自慢: '画像/客_自慢ロレックス.png',
+    セクハラ: '画像/客_粘着セクハラ.png',
+    金欠: '画像/客_金欠ヤンキー.png',
+    粘着: '画像/客_粘着メンヘラ.png',
+    比較: '画像/客_比較侮辱.png',
+    神客: '画像/客_VIP神客.png',
+  },
+  champagne: '画像/物_シャンパンタワー.png',
+  bill: '画像/物_お会計伝票.png',
+};
+
+// 画像のオートロード判定キャッシュ
+const imgExists = {};
+function checkImg(path){
+  if(imgExists[path] !== undefined) return Promise.resolve(imgExists[path]);
+  return new Promise(res=>{
+    const im = new Image();
+    im.onload = ()=>{ imgExists[path] = true; res(true); };
+    im.onerror = ()=>{ imgExists[path] = false; res(false); };
+    im.src = path;
+  });
+}
+
+// =========================================================================
+// BGM (WebAudio・lofi シティポップ風)
+// =========================================================================
+let ac = null, masterGain = null, bgmPlaying = false, bgmTimer = null;
+function initAudio(){
+  if(ac) return;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  ac = new AC();
+  masterGain = ac.createGain();
+  masterGain.gain.value = 0.15;
+  masterGain.connect(ac.destination);
+}
+const PROG = [
+  [220.00, 261.63, 329.63, 261.63],
+  [174.61, 220.00, 261.63, 220.00],
+  [130.81, 196.00, 261.63, 196.00],
+  [196.00, 246.94, 293.66, 246.94],
+];
+let bgmStep = 0;
+function bgmTick(){
+  if(!ac || !bgmPlaying) return;
+  const chord = PROG[Math.floor(bgmStep/4)%4];
+  const note = chord[bgmStep%4];
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type='triangle'; o.frequency.value = note*2;
+  g.gain.value=0;
+  g.gain.linearRampToValueAtTime(0.08, ac.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+0.35);
+  o.connect(g); g.connect(masterGain);
+  o.start(); o.stop(ac.currentTime+0.4);
+  if(bgmStep%4 === 0){
+    const bo=ac.createOscillator(), bg=ac.createGain();
+    bo.type='sine'; bo.frequency.value = chord[0]/2;
+    bg.gain.value=0;
+    bg.gain.linearRampToValueAtTime(0.18, ac.currentTime+0.02);
+    bg.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+0.55);
+    bo.connect(bg); bg.connect(masterGain);
+    bo.start(); bo.stop(ac.currentTime+0.6);
+  }
+  if(bgmStep%16 === 0){
+    [chord[0], chord[2]].forEach(f=>{
+      const po=ac.createOscillator(), pg=ac.createGain();
+      po.type='sawtooth'; po.frequency.value=f;
+      pg.gain.value=0;
+      pg.gain.linearRampToValueAtTime(0.025, ac.currentTime+0.3);
+      pg.gain.linearRampToValueAtTime(0.025, ac.currentTime+1.8);
+      pg.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+2.0);
+      po.connect(pg); pg.connect(masterGain);
+      po.start(); po.stop(ac.currentTime+2.0);
+    });
+  }
+  bgmStep++;
+}
+function startBGM(){
+  initAudio();
+  if(ac.state==='suspended') ac.resume();
+  if(bgmPlaying) return;
+  bgmPlaying = true; bgmStep = 0;
+  bgmTimer = setInterval(bgmTick, 200);
+  document.getElementById('bgm').textContent = '🎵 BGM ON';
+}
+function stopBGM(){
+  bgmPlaying = false;
+  if(bgmTimer){ clearInterval(bgmTimer); bgmTimer = null; }
+  document.getElementById('bgm').textContent = '🔇 BGM OFF';
+}
+function toggleBGM(){ bgmPlaying ? stopBGM() : startBGM(); }
+function sfx(f,d,t='square',v=.1){
+  if(!ac) return;
+  const o=ac.createOscillator(), g=ac.createGain();
+  o.type=t; o.frequency.value=f; g.gain.value=v;
+  g.gain.exponentialRampToValueAtTime(.001, ac.currentTime+d);
+  o.connect(g); g.connect(ac.destination);
+  o.start(); o.stop(ac.currentTime+d);
+}
+const sfxClick=()=>sfx(440,.05,'square',.06);
+const sfxGood=()=>{sfx(660,.08,'triangle');setTimeout(()=>sfx(990,.12,'triangle'),50)};
+const sfxBad=()=>sfx(180,.18,'sawtooth',.15);
+const sfxCash=()=>{sfx(523,.08,'triangle');setTimeout(()=>sfx(659,.08,'triangle'),70);setTimeout(()=>sfx(784,.15,'triangle'),140)};
+document.getElementById('bgm').onclick = toggleBGM;
+
+// =========================================================================
+// 状態管理
+// =========================================================================
+const root = document.getElementById('root');
+const skipBtn = document.getElementById('skip');
+let scene = 'title';
+let prologueAIdx = 0, prologueBIdx = 0, endingIdx = 0, gameoverIdx = 0;
+
+// =========================================================================
+// 紙芝居データ
+// =========================================================================
+// 利用可能画像リスト（編集モード用ドロップダウン）
+const AVAILABLE_IMAGES = [
+  '',
+  'title.png',
+  ...Array.from({length:10},(_,i)=>'プロローグ後編_'+String(i+1).padStart(2,'0')+'.png'),
+  ...Array.from({length:10},(_,i)=>'エンディング_'+String(i+1).padStart(2,'0')+'.png'),
+  'ゲームオーバー.png',
+  '嬢_営業スマイル.png','嬢_心の闇.png','嬢_疲弊裏顔.png',
+  '客_説教おじさん.png','客_自慢ロレックス.png','客_粘着セクハラ.png','客_金欠ヤンキー.png','客_VIP神客.png',
+  '物_シャンパンタワー.png','物_お会計伝票.png',
+  // 追加キャラ（生成すれば使える）
+  '客_粘着メンヘラ.png','客_比較侮辱.png','店長ママ.png','先輩キャスト.png','黒服スタッフ.png',
+  '嬢_シャンパンコール.png','嬢_決意顔.png','嬢_泥酔顔.png',
+  // コミック調キャラ12枚（連番、エディタで配置）
+  ...Array.from({length:12},(_,i)=>'コミック_'+String(i+1).padStart(2,'0')+'.png'),
+  // コミック演出8枚
+  '演出_急げ.png','演出_COMBO.png','演出_正解.png','演出_地雷.png',
+  '演出_TIMEUP.png','演出_集中線.png','演出_ハーフトーン.png','演出_ドン.png',
+];
+
+const DEFAULT_PROLOGUE_A = []; // 前編は廃止
+const DEFAULT_PROLOGUE_B = [ // 10枚 — 出勤〜開店〜開店直後
+  {ico:'🌆', cap:'18時、ネオンが灯り始める歌舞伎町。今夜もノルマは30万円。達成しなければ罰金20万、手取りはマイナスになる。それでも、街灯がピンクに染まる時刻になると、不思議とハイヒールを履きたくなる。私の戦場が始まる合図だから。', file:'プロローグ後編_01.png'},
+  {ico:'👠', cap:'地下への階段を一段ずつ降りていく。コンクリートの壁にヒールが当たる音が、嫌に大きく響く。階段の終点には、ピンクの間接照明が漏れる店の入口。深呼吸ひとつ。私は今夜、別の人格に着替えるのだ。本名は、家に置いてきた。', file:'プロローグ後編_02.png'},
+  {ico:'💄', cap:'楽屋の鏡の前で笑顔の練習を10回する。「いらっしゃ〜い♡」「えー、すごーい♡」「お兄さんモテそう〜♡」。練習しなくても出るくらい身体に染み付いてるのに、それでも今日は念入りに。声と笑顔のバランス、目尻の角度、グロスの艶。0.01ミリ単位の調整。', file:'プロローグ後編_03.png'},
+  {ico:'📋', cap:'店長がやって来て、淡々と告げる。「今月の未達は厳しいね。罰金20万でいい？」。私は「はい、頑張ります♪」とだけ返した。心の中の罵詈雑言は、笑顔の裏にしっかり押し込めて。涙はメイクが落ちるから、もうずっと封印してる。', file:'プロローグ後編_04.png'},
+  {ico:'🎀', cap:'ピンクのカーテンの向こうから、低音のBGMと笑い声が漏れてくる。常連、一見、太客、地雷、いろんな客がもう席に着いている。私はカーテンに手をかけ、最後にもう一度笑顔をチェック。完璧。さあ、ステージへ。', file:'プロローグ後編_05.png'},
+  {ico:'🧓', cap:'一人目の客に呼ばれた。50代、グレースーツ、肩にフケ、口を開いた瞬間に分かる「あ、説教モードだ」。『俺の若い頃はな〜』『今の若い子は〜』。最初の30分は同じ話が3周する。私は『えー、すごーい！』を5回言って酒を回す。これが基本。', file:'プロローグ後編_06.png'},
+  {ico:'😅', cap:'心の中で「あと2時間半、生き延びろ私」と唱える。口元の笑顔は1ミリも崩さない。客の話の節目ごとに『すごーい』『えー』『さすが』の三段活用。これがプロのスキル。客は気持ちよく喋り続け、ボトルが半分減る。それが売上になる。', file:'プロローグ後編_07.png'},
+  {ico:'🍾', cap:'隣のボックスから「シャンパーン入りまーす！」のコール。ナンバー1のさやかちゃん。タワーが組まれて、客は満足げに札束を出す。羨ましい。悔しい。私もあそこに立ちたい。でも今は目の前の説教客にお酌を続けるしかない。一歩ずつ。', file:'プロローグ後編_08.png'},
+  {ico:'💋', cap:'トイレに駆け込んで、鏡で自分の目を見る。アイラインは崩れてない。笑顔はまだ作れる。メンタルゲージはあと…まあ、半分くらい。「今夜こそ、シャンパンを入れさせる」。誰にも聞こえない決意を心の中で叫んで、トイレを出る。', file:'プロローグ後編_09.png'},
+  {ico:'🎯', cap:'席に戻る。メニューを片手に、客の目を見る。「お兄さん、今日特別な日にしませんか？」。営業スマイル100%、声のトーンは少し甘く。ここからの30秒で勝負が決まる。10秒以内に正解の返事を選んで、客の機嫌を上げ続けろ。私の夜、ここから本番。', file:'プロローグ後編_10.png'},
+];
+const DEFAULT_ENDING = [
+  {ico:'🌙', cap:'閉店間際、深夜2時半。客が一人また一人と帰っていき、最後の客を見送ったあと、私はフロアの隅のボックス席に一人で座っていた。空のシャンパングラスが3つ、灰皿には潰れたストロー、伝票。ミラーボールだけがゆっくり回って、誰もいない店内に光の粒を散らしている。今夜も、終わった。', file:'エンディング_01.png'},
+  {ico:'💴', cap:'カウンターの黒服に呼ばれて、茶封筒を受け取る。中の数字を、ゆっくり指で確認する。指名本数、同伴回数、シャンパンの本数、ノルマ達成率、税金、保証金、罰金…ぐちゃぐちゃに細かい明細の最後に、手取り金額。私は表情を変えない。客の前で泣かない、店でも泣かない。ここでも泣かない。プロだから。', file:'エンディング_02.png'},
+  {ico:'😶', cap:'楽屋に戻り、化粧落としシートで目元を拭く。アイライナーが滲んで黒い線が指に付く。付けまつげが片方だけ剥がれて、化粧台の上にぺたっと落ちた。鏡の中、ピンクのキラキラの「彼女」が、少しずつ「私」に戻っていく。源氏名で呼ばれるのも、もう何ヶ月だっけ。本名で呼ばれた最後はいつだっけ。', file:'エンディング_03.png'},
+  {ico:'🍙', cap:'楽屋のソファでさやかちゃんと並んで座る。二人とも靴を脱いで、ヒールを横に放り出して、足首をぐりぐりマッサージしながら笑う。彼女がコンビニのおにぎりを差し出してくれた。鮭。私のお気に入りを覚えてくれてる。「お疲れ〜」。短い言葉だけど、今夜一番優しい音だった。', file:'エンディング_04.png'},
+  {ico:'💨', cap:'店の外に出ると、冷たい夜風が頬を撫でた。白い吐息が、消えそうなネオンの光に溶ける。深夜3時、歌舞伎町風の街もさすがに人影が少ない。ジャケットの襟を立てて、肩をすくめる。ドレスの薄い生地越しに、寒さが背中まで染みる。今日も生き延びた。それだけで充分。', file:'エンディング_05.png'},
+  {ico:'🚕', cap:'タクシー乗り場には終電を逃したサラリーマンが2人並んでいた。スマホを見ながら順番を待っている。私はヒールを脱いで、素足でアスファルトに立つ。冷たい。けどヒールよりずっと楽。黄色の個人タクシーが3台連続でやって来て、ようやく私の順番。「西早稲田まで」。声がかすれた。', file:'エンディング_06.png'},
+  {ico:'🌃', cap:'タクシーの後部座席に深く座り込む。窓ガラスに頬を寄せると、街灯のオレンジ光が一定間隔で流れていく。スマホには通知が30件。常連客のLINE、店長のグループ、ナンバー嬢同士のグループ、家族からの未読1件。母さんからだ。「元気にしてる？」。返信は明日にしよう。今夜は、もう疲れた。', file:'エンディング_07.png'},
+  {ico:'🛏️', cap:'部屋のドアを開けてベッドに直行、ドレスのまま、化粧も落とさず倒れ込む。床にはヒール、ハンドバッグ、化粧ポーチが散乱。明日の自分が片付けてくれることを期待して、今夜の私は何もしない。窓の外、薄い藍色の空。朝が来ようとしている。…でもまだ、私の今日は終わっていない。', file:'エンディング_08.png'},
+  {ico:'☀️', cap:'朝9時、目覚ましのアラームが鳴る前にカーテンの隙間からの光で目が覚めた。半身を起こして、窓を少しだけ開ける。Tシャツに着替えて、髪はボサボサ、顔は完全に素顔。化粧の名残でアイラインだけ少し滲んでる。差し込む朝の光が部屋に三角形に伸びて、空中の埃が踊って見える。これが、本当の私。', file:'エンディング_09.png'},
+  {ico:'🌆', cap:'夕方17時。また同じ歌舞伎町風の繁華街に向かう。完璧にメイクし直して、新しいドレス、ジャケット羽織って、メイクポーチを片手に。ネオンが灯り始める時刻、空は薄紫からオレンジへのグラデーション。歩幅は堂々と力強い。また、夜が始まる。私の戦場が、もう一夜分、私を待っている。', file:'エンディング_10.png'},
+];
+const DEFAULT_GAMEOVER = [
+  {ico:'💩', cap:'店長「今月、未達ですね…分かってますね？」。罰金20万、給料からそのまま天引き。手取りは大きくマイナス。帰り道、誰もいない路地でしゃがみ込んで、顔を覆って泣いた。アイラインが滲んで頬を伝う。誰にも見せられない涙。…それでも明日、私はまたメイクをして、ヒールを履いて、この店に戻ってくる。終わらせない。まだ、終わらせない。', file:'ゲームオーバー.png'},
+];
+
+// 永続化対応データ（localStorage）
+function deepClone(o){ return JSON.parse(JSON.stringify(o)); }
+function loadKami(){
+  // prologue_a は廃止、localStorage 内の旧データは無視
+  try{
+    const s = localStorage.getItem('kabaKamiData');
+    if(s){
+      const p = JSON.parse(s);
+      // 旧データの prologue_b が10枚未満なら新DEFAULTで上書き（長文化対応）
+      const newProB = (p.prologue_b && p.prologue_b.length === 10 && p.prologue_b[0].cap && p.prologue_b[0].cap.length > 50) ? p.prologue_b : deepClone(DEFAULT_PROLOGUE_B);
+      const newEnd = (p.ending && p.ending.length === 10 && p.ending[0].cap && p.ending[0].cap.length > 50) ? p.ending : deepClone(DEFAULT_ENDING);
+      const newGo = (p.gameover && p.gameover[0] && p.gameover[0].cap && p.gameover[0].cap.length > 50) ? p.gameover : deepClone(DEFAULT_GAMEOVER);
+      return {
+        prologue_a: [],
+        prologue_b: newProB,
+        ending:     newEnd,
+        gameover:   newGo,
+      };
+    }
+  }catch(e){}
+  return {
+    prologue_a: [],
+    prologue_b: deepClone(DEFAULT_PROLOGUE_B),
+    ending:     deepClone(DEFAULT_ENDING),
+    gameover:   deepClone(DEFAULT_GAMEOVER),
+  };
+}
+let KAMI = loadKami();
+const PROLOGUE_A = KAMI.prologue_a;
+const PROLOGUE_B = KAMI.prologue_b;
+const ENDING = KAMI.ending;
+const GAMEOVER = KAMI.gameover;
+
+// =========================================================================
+// シーン遷移
+// =========================================================================
+function go(target){
+  scene = target;
+  if(target==='title') renderTitle();
+  else if(target==='opening') renderOpening();
+  else if(target==='prologue_a'){
+    // 前編は廃止：自動的に後編へスキップ
+    go('prologue_b');
+    return;
+  }
+  else if(target==='prologue_b'){ prologueBIdx=0; renderKami('prologue_b'); }
+  else if(target==='game') renderGame();
+  else if(target==='ending'){ endingIdx=0; renderKami('ending'); }
+  else if(target==='gameover'){ gameoverIdx=0; renderKami('gameover'); }
+  else if(target==='credits') renderCredits();
+  else if(target==='edit') renderEdit();
+  else if(target==='copyedit') renderCopyEdit();
+  if(['opening','prologue_a','prologue_b','ending','gameover'].includes(target)){
+    skipBtn.classList.remove('hide');
+  } else {
+    skipBtn.classList.add('hide');
+  }
+}
+skipBtn.onclick = ()=>{
+  if(scene==='opening') go('prologue_a');
+  else if(scene==='prologue_a') go('prologue_b');
+  else if(scene==='prologue_b') go('game');
+  else if(scene==='ending') go('credits');
+  else if(scene==='gameover') go('credits');
+};
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && !skipBtn.classList.contains('hide')) skipBtn.click();
+  if((e.key===' ' || e.key==='Enter') && ['prologue_a','prologue_b','ending','gameover'].includes(scene)){
+    e.preventDefault();
+    advanceKami();
+  }
+});
+
+// =========================================================================
+// タイトル
+// =========================================================================
+let titlePattern = (localStorage.getItem('titlePattern') || 'B');
+
+// タイトル＋副題＋コピー 統合パターン
+const PATTERNS = [
+  { name:'推し',
+    title:'「えー、すごーい♡」のプロになろう',
+    subtitle:'客の地雷を10秒で見抜く反射神経テスト',
+    hook:'3分で熟練嬢の "瞬殺リアクション" が身につく',
+    sub:'正解返事200本ドリル',
+    banner:'痛客回避60秒ADV' },
+  { name:'60秒推し',
+    title:'キャバ会話60', subtitle:'— 60秒スプリント嬢視点ADV —',
+    hook:'3分で痛客60秒の捌き方',
+    sub:'笑顔100%、心の声200本、地雷踏むな',
+    banner:'⚡ 客7タイプ × 心の声200本 × 10秒判定 ⚡' },
+  { name:'ナンバー1',
+    title:'ナンバー1', subtitle:'— 60秒で目指す、嬢視点ブラック —',
+    hook:'3分でナンバー1の返事力',
+    sub:'今夜、店のNo.1を獲れ',
+    banner:'⚡ ノルマ30万 × COMBO倍率 × 60秒 ⚡' },
+  { name:'シャンパーン',
+    title:'シャンパーン入りまーす', subtitle:'— 痛客回避60秒ADV —',
+    hook:'3分で「えー、すごーい♡」の達人',
+    sub:'10秒で正解、地雷踏むな',
+    banner:'⚡ 60秒スプリント × 心の声200本 ⚡' },
+  { name:'瞬殺リアクション',
+    title:'瞬殺リアクション', subtitle:'— 嬢視点ブラックADV —',
+    hook:'3分で正解返事200本ドリル',
+    sub:'飲み会・接待・面倒な人にも効く返し方',
+    banner:'⚡ 3分で身につく、10秒で出す ⚡' },
+  { name:'ノルマ30万',
+    title:'ノルマ30万', subtitle:'— 60秒、痛客を捌け —',
+    hook:'3分で客のキモさを受け流す',
+    sub:'内心ガチギレ、口元ニッコリ、地雷踏むな',
+    banner:'⚡ 自慢・説教・セクハラを完璧スルー ⚡' },
+  { name:'えーすごーい',
+    title:'えーすごーい', subtitle:'— 60秒嬢視点ADV —',
+    hook:'3分で「えー、すごーい♡」のプロ',
+    sub:'客の話、4周目でも笑顔キープせよ',
+    banner:'⚡ 営業スマイル100% × 心の中ガチギレ100% ⚡' },
+  { name:'痛客カード',
+    title:'痛客カード', subtitle:'— 60秒回避ADV —',
+    hook:'3分で熟練嬢の瞬殺ADV',
+    sub:'痛客カード回避 ✕ 60秒スプリント',
+    banner:'⚡ 客7タイプ × 心の声200本 × 10秒判定 ⚡' },
+];
+// パターン1で確定（過去の編集データ・別パターン選択は破棄）
+(function forcePattern1(){
+  try{
+    localStorage.removeItem('patternsOverride');
+    localStorage.removeItem('patternIdx');
+  }catch(e){}
+})();
+let patternIdx = 0;
+function savePatterns(){
+  try{
+    const json = JSON.stringify(PATTERNS);
+    localStorage.setItem('patternsOverride', json);
+    const verify = localStorage.getItem('patternsOverride');
+    if(verify !== json){
+      alert('保存失敗：書き戻し不一致');
+      return;
+    }
+    // 保存先のパス情報をtoastで表示
+    const path = 'c:\\gm\\エロマダミス\\キャバ嬢_紙芝居版.html';
+    const storage = '~/AppData/Local/Microsoft/Edge/.../Local Storage';
+    const ov = document.createElement('div');
+    ov.className = 'edit-toast';
+    ov.style.cssText = 'left:50%;bottom:auto;top:30%;transform:translateX(-50%);background:#5af0a0;color:#000;padding:18px 24px;border-radius:12px;font-weight:bold;z-index:1000;max-width:90vw;line-height:1.6;font-size:13px;text-align:left;border:3px solid #000;box-shadow:5px 5px 0 #000';
+    ov.innerHTML = `💾 <b>保存OK</b><br><br><b>HTML:</b><br>${path}<br><br><b>保存先:</b> Edge localStorage<br>${storage}<br><br>↩ 700ms 後にタイトル画面へ`;
+    document.body.appendChild(ov);
+    setTimeout(()=>ov.remove(), 2500);
+    setTimeout(()=>go('title'), 700);
+  }catch(e){ alert('保存失敗: ' + e.message); }
+}
+function resetPatterns(){
+  if(!confirm('全コピーをデフォルトに戻す？（リロードします）')) return;
+  localStorage.removeItem('patternsOverride');
+  location.reload();
+}
+function renderCopyEdit(){
+  scene = 'copyedit';
+  skipBtn.classList.add('hide');
+  const esc = (s)=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  root.innerHTML = `
+    <div class="edit-screen">
+      <div class="edit-header">
+        <h2>✏️ コピーエディタ</h2>
+        <div class="btns">
+          <button class="btn-back" onclick="go('title')">↩ タイトル</button>
+          <button class="btn-reset" onclick="resetPatterns()">🔄 デフォルトに戻す</button>
+          <button class="btn-save" onclick="savePatterns()">💾 保存</button>
+        </div>
+      </div>
+      ${PATTERNS.map((p,i)=>`
+        <div class="edit-section">
+          <h3>📋 パターン ${i+1}：<input class="cep-fld cep-name" data-i="${i}" data-k="name" value="${esc(p.name)}" style="display:inline-block;width:240px;margin-left:8px"></h3>
+          <div class="cep-row"><label>タイトル</label><input class="cep-fld" data-i="${i}" data-k="title" value="${esc(p.title)}"></div>
+          <div class="cep-row"><label>副題</label><input class="cep-fld" data-i="${i}" data-k="subtitle" value="${esc(p.subtitle)}"></div>
+          <div class="cep-row"><label>メイン(最大)</label><textarea class="cep-fld big" data-i="${i}" data-k="hook">${esc(p.hook)}</textarea></div>
+          <div class="cep-row"><label>サブ</label><textarea class="cep-fld" data-i="${i}" data-k="sub">${esc(p.sub)}</textarea></div>
+          <div class="cep-row"><label>帯</label><textarea class="cep-fld" data-i="${i}" data-k="banner">${esc(p.banner)}</textarea></div>
+        </div>
+      `).join('')}
+      <div style="text-align:center;color:#888;font-size:11px;font-style:italic;margin:20px 0">編集→💾保存→↩タイトルへ戻って確認</div>
+    </div>
+  `;
+  document.querySelectorAll('.cep-fld').forEach(el=>{
+    el.oninput = ()=>{
+      const i = +el.dataset.i;
+      const k = el.dataset.k;
+      PATTERNS[i][k] = el.value;
+    };
+  });
+}
+
+function setPatternIdx(i){
+  patternIdx = i;
+  localStorage.setItem('patternIdx', String(i));
+  renderTitle();
+}
+function copyBar(){
+  const cur = PATTERNS[patternIdx];
+  return `
+    <div class="copy-bar">
+      <span class="label">パターン</span>
+      ${PATTERNS.map((p,i)=>`<button class="${i===patternIdx?'active':''}" onclick="setPatternIdx(${i})" title="${p.name}">${i+1}</button>`).join('')}
+      <span class="name">${cur.name}</span>
+      <button class="edit-btn" onclick="go('copyedit')">✏️ 編集</button>
+    </div>
+  `;
+}
+// 旧名互換：COPY_PATTERNS[copyIdx] と TITLE_PATTERNS[titleIdx] を PATTERNS[patternIdx] にマップ
+const COPY_PATTERNS = PATTERNS;
+let copyIdx = patternIdx;
+Object.defineProperty(window, 'copyIdx', { get:()=>patternIdx, set:(v)=>{patternIdx=v;} });
+
+function setPattern(p){
+  titlePattern = p;
+  localStorage.setItem('titlePattern', p);
+  renderTitle();
+}
+
+function patternBar(){
+  // パターン切替バーは非表示（URLに ?pattern=A/B/C を付けると切替可能）
+  return '';
+}
+// URL パラメータでパターン切替＆編集モード起動
+(function(){
+  try{
+    const params = new URLSearchParams(window.location.search);
+    const p = params.get('pattern');
+    if(p && ['A','B','C'].includes(p)) localStorage.setItem('titlePattern', p);
+    if(params.has('edit')) setTimeout(()=>go('edit'), 100);
+    if(params.has('copyedit')) setTimeout(()=>go('copyedit'), 100);
+    if(params.has('dev')) document.body.classList.add('dev-mode');
+  }catch(e){}
+})();
+
+function renderTitle(){
+  if(titlePattern === 'A') return renderTitleA();
+  if(titlePattern === 'C') return renderTitleC();
+  return renderTitleB();
+}
+
+function renderTitleA(){
+  // パターンA：コミック調（ゲーム画面そっくり）
+  root.innerHTML = `
+    <div class="title-comic-mode">
+      <div class="comic-wrap">
+        <div class="comic-top">
+          <div class="comic-girl">
+            <div class="face-wrap"><img src="画像/嬢_営業スマイル.png" onerror="this.outerHTML='&lt;span&gt;💁‍♀️&lt;/span&gt;'"></div>
+            <div class="state">準備中</div>
+          </div>
+          <div class="comic-title-box">
+            <h1>${PATTERNS[patternIdx].title}</h1>
+            <div class="sub">${PATTERNS[patternIdx].subtitle}</div>
+            <div class="hook">${COPY_PATTERNS[copyIdx].hook}</div>
+            <div style="font-size:11px;color:#aaa;margin-top:4px">${COPY_PATTERNS[copyIdx].sub}</div>
+          </div>
+          <div class="start-btn-comic" onclick="startBGM();go('opening')">
+            <div class="lbl">▶</div>
+            <div class="val">START</div>
+            <div class="suf">押せ</div>
+          </div>
+        </div>
+        <div class="comic-hud">
+          <div class="item"><div class="l">客タイプ</div><div class="v score">7</div></div>
+          <div class="item"><div class="l">判定</div><div class="v combo">10秒</div></div>
+          <div class="item"><div class="l">ノルマ</div><div class="v bonus">30万</div></div>
+          <div class="item"><div class="l">勝負</div><div class="v quota">60秒</div></div>
+        </div>
+        <div class="comic-stage">
+          <div class="comic-cust">
+            <div class="face" id="aCustFace"><span>🤓</span></div>
+            <div class="name" id="aCustName">田所部長</div>
+            <div class="tag" id="aCustTag">説教おじさん（50代）</div>
+          </div>
+          <div class="comic-right">
+            <div class="comic-bubble" id="aBubble">「俺の若い頃はな、朝5時から営業回ってさぁ…」</div>
+            <div class="comic-bar-row">
+              <span class="clock">⏱</span><span class="lbl">本番は各問10秒</span>
+              <div class="bar"><div class="fill" style="width:60%"></div></div>
+            </div>
+            <div class="comic-choices">
+              <button class="comic-choice" onclick="startBGM();go('opening')"><div class="num">1</div><span class="lip" id="aOk">「えー、すごーい♡」</span><span class="think" id="aOkThink">💭 また始まった、酒回しとこ</span></button>
+              <button class="comic-choice" onclick="startBGM();go('opening')"><div class="num">2</div><span class="lip" id="aNg">「また同じ話…」</span><span class="think" id="aNgThink">💭 地雷踏んだ</span></button>
+            </div>
+          </div>
+        </div>
+        <div class="comic-footer"><b>${COPY_PATTERNS[copyIdx].banner}</b></div>
+      </div>
+    </div>
+    ${copyBar()}
+  `;
+  // 客画像差し替え
+  const cust = ['説教','自慢','セクハラ','金欠','粘着','比較','神客'];
+  const map = {説教:'客_説教おじさん.png', 自慢:'客_自慢ロレックス.png', セクハラ:'客_粘着セクハラ.png', 金欠:'客_金欠ヤンキー.png', 神客:'客_VIP神客.png'};
+  if(map['説教']){
+    checkImg('画像/'+map['説教']).then(ok=>{
+      if(ok) document.getElementById('aCustFace').innerHTML = `<img src="画像/${map['説教']}">`;
+    });
+  }
+  startDemoRotationA();
+}
+
+function renderTitleC(){
+  // パターンC：ミニマル映画ポスター
+  root.innerHTML = `
+    <div class="title-poster">
+      <div class="poster-bg" id="posterBg"></div>
+      <div class="poster-vignette"></div>
+      <div class="poster-content">
+        <div class="poster-tag">${PATTERNS[patternIdx].subtitle}</div>
+        <div class="poster-logo">${PATTERNS[patternIdx].title}</div>
+        <div class="poster-catch">${COPY_PATTERNS[copyIdx].hook}</div>
+        <div class="poster-spec">${COPY_PATTERNS[copyIdx].sub}</div>
+        <br>
+        <button class="poster-btn" id="startBtn">▶ START</button>
+        <div style="margin-top:14px;color:#ffd23a;font-size:12px;font-weight:bold;letter-spacing:.05em">${COPY_PATTERNS[copyIdx].banner}</div>
+      </div>
+    </div>
+    ${copyBar()}
+  `;
+  checkImg(IMG.title).then(ok=>{
+    if(ok) document.getElementById('posterBg').style.backgroundImage = `url("${IMG.title}")`;
+  });
+  document.getElementById('startBtn').onclick = ()=>{ startBGM(); go('opening'); };
+}
+
+function renderTitleB(){
+  root.innerHTML = `
+    <div class="title-screen">
+      <div class="title-bg-img" id="titleBg"></div>
+      <div class="title-overlay"></div>
+      <img src="画像/演出_COMBO.png" class="fx-float fx-f1" alt="">
+      <img src="画像/演出_正解.png" class="fx-float fx-f2" alt="">
+      <img src="画像/演出_急げ.png" class="fx-float fx-f3" alt="">
+      <img src="画像/演出_地雷.png" class="fx-float fx-f4" alt="">
+      <div class="best-badge" id="bestBadge">BEST<span class="v" id="bestVal">0</span></div>
+      <div class="title-top">
+        <div class="title-hook">${COPY_PATTERNS[copyIdx].hook}</div>
+        <div class="title-logo">${PATTERNS[patternIdx].title}</div>
+        <div class="title-sub">${PATTERNS[patternIdx].subtitle}</div>
+        <div class="title-hook-sub">${COPY_PATTERNS[copyIdx].sub}</div>
+        <div class="challenge-banner">${COPY_PATTERNS[copyIdx].banner}</div>
+      </div>
+      <div class="title-bottom">
+        <div class="title-demo" id="titleDemo">
+          <div class="demo-label" id="demoLabel">▼ 客が次々と来る (60秒勝負) ▼</div>
+          <div class="demo-quest">
+            <span class="demo-icon" id="demoIcon">🤓</span>
+            <div class="demo-text" id="demoText">「俺の若い頃はな、朝5時から営業回ってさぁ…」</div>
+          </div>
+          <div class="demo-choices">
+            <div class="demo-choice ok" id="demoOk">✓ えー、すごーい♡</div>
+            <div class="demo-choice ng" id="demoNg">💣 また同じ話…</div>
+          </div>
+          <div class="demo-inner" id="demoThink">💭 また始まった、酒回しとこ</div>
+        </div>
+        <div class="title-cast">
+          <div class="title-cast-item"><span class="emo">🤓</span><span class="lbl">説教</span></div>
+          <div class="title-cast-item"><span class="emo">🤵</span><span class="lbl">自慢</span></div>
+          <div class="title-cast-item"><span class="emo">😈</span><span class="lbl">セクハラ</span></div>
+          <div class="title-cast-item"><span class="emo">🤙</span><span class="lbl">金欠</span></div>
+          <div class="title-cast-item"><span class="emo">🥺</span><span class="lbl">粘着</span></div>
+          <div class="title-cast-item"><span class="emo">😒</span><span class="lbl">比較</span></div>
+          <div class="title-cast-item"><span class="emo">😇</span><span class="lbl">神客</span></div>
+        </div>
+        <div class="title-specs">
+          <span>⏱ 10秒判定</span>
+          <span>💰 ノルマ30万</span>
+          <span>🔥 60秒勝負</span>
+          <span>💭 心の声 200本</span>
+        </div>
+        <button class="title-btn" id="startBtn">▶ START</button>
+
+        <div class="title-credit">表向き 100% 笑顔 ／ 本音 100% ガチギレ — 30秒、生き延びろ</div>
+      </div>
+    </div>
+    ${copyBar()}
+  `;
+  checkImg(IMG.title).then(ok=>{
+    if(ok) document.getElementById('titleBg').style.backgroundImage = `url("${IMG.title}")`;
+  });
+  document.getElementById('startBtn').onclick = ()=>{ startBGM(); go('opening'); };
+  // ベストスコア表示
+  const best = +(localStorage.getItem('kabaBestScore') || 0);
+  const bestEl = document.getElementById('bestVal');
+  if(bestEl) bestEl.textContent = best.toLocaleString();
+  const bestBadge = document.getElementById('bestBadge');
+  if(bestBadge && best === 0) bestBadge.style.display = 'none';
+  startDemoRotation();
+}
+
+function startDemoRotationA(){
+  if(window._demoTimerA) clearInterval(window._demoTimerA);
+  const map = {説教:'客_説教おじさん.png', 自慢:'客_自慢ロレックス.png', セクハラ:'客_粘着セクハラ.png', 金欠:'客_金欠ヤンキー.png', 神客:'客_VIP神客.png'};
+  let idx = 0;
+  window._demoTimerA = setInterval(()=>{
+    if(scene !== 'title' || titlePattern !== 'A') { clearInterval(window._demoTimerA); return; }
+    idx = (idx + 1) % DEMO_ROTATION.length;
+    const d = DEMO_ROTATION[idx];
+    // tag mapping
+    const tagMap = {'🤓':'説教','🤵':'自慢','😈':'セクハラ','🤙':'金欠','🥺':'粘着','😒':'比較','😇':'神客'};
+    const type = tagMap[d.face] || '説教';
+    const face = document.getElementById('aCustFace');
+    const name = document.getElementById('aCustName');
+    const tag = document.getElementById('aCustTag');
+    const bubble = document.getElementById('aBubble');
+    const ok = document.getElementById('aOk');
+    const ng = document.getElementById('aNg');
+    const okT = document.getElementById('aOkThink');
+    const ngT = document.getElementById('aNgThink');
+    if(!face) return;
+    const img = map[type];
+    if(img){
+      checkImg('画像/'+img).then(found=>{
+        if(found && face) face.innerHTML = `<img src="画像/${img}">`;
+        else if(face) face.innerHTML = `<span>${d.face}</span>`;
+      });
+    } else {
+      face.innerHTML = `<span>${d.face}</span>`;
+    }
+    const tlabels = {説教:'説教おじさん（50代）',自慢:'自慢ロレックス（40代）',セクハラ:'粘着セクハラ（60代）',金欠:'金欠ヤンキー（20代）',粘着:'メンヘラ',比較:'比較侮辱（30代）',神客:'VIP神客（40代前半）'};
+    const tnames = {説教:'田所部長',自慢:'ロレックス鈴木',セクハラ:'エロ仙人',金欠:'イキり翔',粘着:'鬼電マサキ',比較:'元彼面',神客:'紳士 木村'};
+    if(name) name.textContent = tnames[type];
+    if(tag) tag.textContent = tlabels[type];
+    if(bubble) bubble.textContent = d.q;
+    if(ok) ok.textContent = `「${d.ok}」`;
+    if(ng) ng.textContent = `「${d.ng}」`;
+    if(okT) okT.innerHTML = `💭 ${d.think}`;
+    if(ngT) ngT.innerHTML = `💭 地雷判定`;
+  }, 3500);
+}
+
+// タイトル画面のデモ自動切り替え
+const DEMO_ROTATION = [
+  {face:'🤓', q:'「俺の若い頃はな、朝5時から営業回ってさぁ…」', ok:'えー、すごーい♡', ng:'また同じ話…', think:'また始まった、酒回しとこ'},
+  {face:'🤵', q:'「この時計、400万のロレックスなんだよね〜」', ok:'えー！ホンモノですか♡', ng:'いくらですか具体的に？', think:'タクシー代借りた先週のお前のセリフか？'},
+  {face:'😈', q:'「LINE教えてよ〜、店外で会おう」', ok:'店のじゃダメ？♡', ng:'気持ち悪いです', think:'偽アカ用意済み'},
+  {face:'🤙', q:'「シャンパン入れる！…あ、やっぱナシで」', ok:'えーまた期待しちゃう♡', ng:'ケチ', think:'卓囲み損確定'},
+  {face:'🥺', q:'「結婚しよう、君が運命だ」', ok:'えー嬉しい♡考えとくね', ng:'お兄さんと？無理', think:'初回でそれは無理'},
+  {face:'😒', q:'「前の嬢の方が可愛かったな」', ok:'私もっと頑張ります！', ng:'じゃ前の嬢呼べば？', think:'じゃ前の嬢呼べ'},
+  {face:'😇', q:'「無理しないで、好きな分入れて」', ok:'神様♡ドンペリ入れちゃう', ng:'今夜お持ち帰り♡', think:'本物の神客'},
+];
+let demoTimer = null;
+function startDemoRotation(){
+  if(demoTimer) clearInterval(demoTimer);
+  let idx = 0;
+  function update(){
+    const d = DEMO_ROTATION[idx];
+    const els = ['demoQuest','demoChoices','demoThink'].map(()=>null);
+    const q = document.querySelector('#titleDemo .demo-quest');
+    const c = document.querySelector('#titleDemo .demo-choices');
+    const t = document.querySelector('#titleDemo .demo-inner');
+    if(!q || !c || !t) return;
+    q.classList.add('demo-fade');
+    c.classList.add('demo-fade');
+    t.classList.add('demo-fade');
+    setTimeout(()=>{
+      const icon = document.getElementById('demoIcon');
+      const txt  = document.getElementById('demoText');
+      const ok   = document.getElementById('demoOk');
+      const ng   = document.getElementById('demoNg');
+      const th   = document.getElementById('demoThink');
+      if(icon) icon.textContent = d.face;
+      if(txt)  txt.textContent  = d.q;
+      if(ok)   ok.textContent   = '✓ ' + d.ok;
+      if(ng)   ng.textContent   = '💣 ' + d.ng;
+      if(th)   th.innerHTML     = '💭 ' + d.think;
+      q.classList.remove('demo-fade');
+      c.classList.remove('demo-fade');
+      t.classList.remove('demo-fade');
+    }, 380);
+    idx = (idx + 1) % DEMO_ROTATION.length;
+  }
+  demoTimer = setInterval(update, 3500);
+}
+
+// =========================================================================
+// オープニング動画
+// =========================================================================
+function renderOpening(){
+  root.innerHTML = `
+    <div class="opening-screen" id="opScreen">
+      <video id="opVideo" muted autoplay playsinline>
+        <source src="動画/opening.mp4" type="video/mp4">
+      </video>
+    </div>
+  `;
+  const v = document.getElementById('opVideo');
+  const op = document.getElementById('opScreen');
+  v.addEventListener('error', showPlaceholder);
+  v.addEventListener('ended', ()=>go('prologue_a'));
+  setTimeout(()=>{ if(scene==='opening') go('prologue_a'); }, 9000);
+  setTimeout(()=>{ if(v.readyState === 0) showPlaceholder(); }, 700);
+  function showPlaceholder(){
+    op.innerHTML = `
+      <div class="opening-placeholder">
+        <div class="icon">🌆🎀🎬</div>
+        <div class="label">OPENING MOVIE</div>
+        <div style="color:#fff;font-size:16px;margin:10px 0">歌舞伎町のネオン → 地下店舗 → 主人公ウインク</div>
+        <div class="hint">
+          「動画/opening.mp4」を置けばここで再生されます<br>
+          BGMはこの間も流れ続けます（動画はmuted）<br>
+          ⏭ スキップ or Esc で次へ
+        </div>
+      </div>
+    `;
+    setTimeout(()=>{ if(scene==='opening') go('prologue_a'); }, 4500);
+  }
+}
+
+// =========================================================================
+// 紙芝居共通
+// =========================================================================
+function renderKami(mode){
+  let list, idx, chapter, isGameover = false;
+  if(mode==='prologue_a'){ list=KAMI.prologue_a; idx=prologueAIdx; chapter='PROLOGUE 前編'; }
+  else if(mode==='prologue_b'){ list=KAMI.prologue_b; idx=prologueBIdx; chapter='PROLOGUE 後編'; }
+  else if(mode==='ending'){ list=KAMI.ending; idx=endingIdx; chapter='ENDING'; }
+  else if(mode==='gameover'){ list=KAMI.gameover; idx=gameoverIdx; chapter='GAME OVER'; isGameover=true; }
+
+  const item = list[idx];
+  root.innerHTML = `
+    <div class="kami-screen" id="kamiScreen">
+      <div class="kami-img-wrap" id="imgWrap">
+        <div class="kami-placeholder ${isGameover?'go':''}">
+          <div class="ico">${item.ico}</div>
+          <div class="num">${chapter} ${idx+1} / ${list.length}</div>
+          <div class="filename">画像/${item.file}</div>
+        </div>
+      </div>
+      <div class="kami-caption ${isGameover?'go':''}">
+        <div class="chapter">${chapter}</div>
+        <div class="text">${item.cap}</div>
+        <div class="hint">クリック or Space で次へ ▶</div>
+      </div>
+    </div>
+  `;
+  const wrap = document.getElementById('imgWrap');
+  checkImg(`画像/${item.file}`).then(ok=>{
+    if(ok && scene===mode){
+      const img = document.createElement('img');
+      img.className = 'kami-img';
+      img.src = `画像/${item.file}`;
+      wrap.innerHTML = '';
+      wrap.appendChild(img);
+    }
+  });
+  document.getElementById('kamiScreen').onclick = advanceKami;
+  sfxClick();
+}
+function advanceKami(){
+  if(scene==='prologue_a'){
+    prologueAIdx++;
+    if(prologueAIdx >= KAMI.prologue_a.length) go('prologue_b');
+    else renderKami('prologue_a');
+  } else if(scene==='prologue_b'){
+    prologueBIdx++;
+    if(prologueBIdx >= KAMI.prologue_b.length) go('game');
+    else renderKami('prologue_b');
+  } else if(scene==='ending'){
+    endingIdx++;
+    if(endingIdx >= KAMI.ending.length) go('credits');
+    else renderKami('ending');
+  } else if(scene==='gameover'){
+    gameoverIdx++;
+    if(gameoverIdx >= KAMI.gameover.length) go('credits');
+    else renderKami('gameover');
+  }
+}
+
+// =========================================================================
+// 編集モード
+// =========================================================================
+function saveKami(){
+  try{
+    localStorage.setItem('kabaKamiData', JSON.stringify(KAMI));
+    showToast('💾 保存しました');
+  }catch(e){ alert('保存失敗: ' + e.message); }
+}
+function resetKami(){
+  if(!confirm('編集内容をすべてデフォルトに戻す？')) return;
+  KAMI.prologue_a = deepClone(DEFAULT_PROLOGUE_A);
+  KAMI.prologue_b = deepClone(DEFAULT_PROLOGUE_B);
+  KAMI.ending     = deepClone(DEFAULT_ENDING);
+  KAMI.gameover   = deepClone(DEFAULT_GAMEOVER);
+  localStorage.removeItem('kabaKamiData');
+  renderEdit();
+  showToast('🔄 リセットしました');
+}
+function moveItem(key, idx, delta){
+  const arr = KAMI[key];
+  const newIdx = idx + delta;
+  if(newIdx < 0 || newIdx >= arr.length) return;
+  [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+  renderEdit();
+  // 編集中スクロール位置維持はあきらめる（簡素化）
+}
+function showToast(msg){
+  const t = document.createElement('div');
+  t.className = 'edit-toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 1800);
+}
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function renderEditItem(key, idx, item, total){
+  const options = AVAILABLE_IMAGES.map(f=>{
+    const sel = f === item.file ? 'selected' : '';
+    return `<option value="${escapeHtml(f)}" ${sel}>${f||'(画像なし)'}</option>`;
+  }).join('');
+  const imgHtml = item.file ? `<img src="画像/${item.file}" alt="">` : '画像なし';
+  return `
+    <div class="edit-item">
+      <div class="edit-item-num">${idx+1}</div>
+      <div class="edit-item-img">${imgHtml}</div>
+      <div class="edit-item-controls">
+        <div class="edit-item-top">
+          <input class="edit-ico" data-key="${key}" data-idx="${idx}" value="${escapeHtml(item.ico)}" placeholder="絵文字">
+          <select class="edit-file" data-key="${key}" data-idx="${idx}">${options}</select>
+        </div>
+        <textarea class="edit-cap" data-key="${key}" data-idx="${idx}" placeholder="キャプション">${escapeHtml(item.cap)}</textarea>
+      </div>
+      <div class="edit-item-buttons">
+        <button onclick="moveItem('${key}',${idx},-1)" ${idx===0?'disabled':''} title="上へ">↑</button>
+        <button onclick="moveItem('${key}',${idx},1)" ${idx===total-1?'disabled':''} title="下へ">↓</button>
+      </div>
+    </div>
+  `;
+}
+function renderEditSection(key, label, items){
+  return `
+    <div class="edit-section">
+      <h3>📖 ${label}（${items.length}枚）</h3>
+      ${items.map((it,i)=>renderEditItem(key, i, it, items.length)).join('')}
+    </div>
+  `;
+}
+function renderEdit(){
+  scene = 'edit';
+  skipBtn.classList.add('hide');
+  root.innerHTML = `
+    <div class="edit-screen">
+      <div class="edit-header">
+        <h2>🔧 紙芝居エディタ</h2>
+        <div class="btns">
+          <button class="btn-back" onclick="go('title')">↩ タイトル</button>
+          <button class="btn-reset" onclick="resetKami()">🔄 リセット</button>
+          <button class="btn-save" onclick="saveKami()">💾 保存</button>
+        </div>
+      </div>
+      ${renderEditSection('prologue_b','プロローグ', KAMI.prologue_b)}
+      ${renderEditSection('ending','エンディング', KAMI.ending)}
+      ${renderEditSection('gameover','ゲームオーバー', KAMI.gameover)}
+    </div>
+  `;
+  // バインド
+  document.querySelectorAll('.edit-file').forEach(el=>{
+    el.onchange = ()=>{
+      KAMI[el.dataset.key][+el.dataset.idx].file = el.value;
+      const wrap = el.closest('.edit-item').querySelector('.edit-item-img');
+      wrap.innerHTML = el.value ? `<img src="画像/${el.value}" alt="">` : '画像なし';
+    };
+  });
+  document.querySelectorAll('.edit-cap').forEach(el=>{
+    el.oninput = ()=>{ KAMI[el.dataset.key][+el.dataset.idx].cap = el.value; };
+  });
+  document.querySelectorAll('.edit-ico').forEach(el=>{
+    el.oninput = ()=>{ KAMI[el.dataset.key][+el.dataset.idx].ico = el.value; };
+  });
+}
+
+// =========================================================================
+// ゲーム本体
+// =========================================================================
+const TYPES = {
+  説教:    {face:'🤓', tag:'説教おじさん（50代）', mood:0, names:['田所部長','佐藤課長','山田取締役']},
+  自慢:    {face:'🤵', tag:'自慢ロレックス（40代）', mood:0, names:['ロレックス鈴木','社長 高橋','投資家 渡辺']},
+  セクハラ: {face:'😈', tag:'粘着セクハラ（60代）', mood:-10, names:['ハゲ太郎','エロ仙人','触りたガリ']},
+  金欠:    {face:'🤙', tag:'金欠ヤンキー（20代）', mood:0, names:['イキり翔','金欠リュウ','ツケの賢']},
+  粘着:    {face:'🥺', tag:'メンヘラ（年齢不詳）', mood:+10, names:['鬼電マサキ','LINE沼','ガチ恋ケンジ']},
+  比較:    {face:'😒', tag:'比較侮辱（30代）', mood:0, names:['批評家 高木','〇〇店マサオ','元彼面']},
+  神客:    {face:'😇', tag:'VIP神客（40代前半）', mood:+30, names:['神様','社長 山口','紳士 木村']},
+};
+
+const SCENES = {
+  説教: [
+    {q:'俺の若い頃はな、朝5時から営業回ってさぁ…', ch:[
+      ['えー、すごーい！想像つかないです♡','また始まった、酒回しとこ',0,-1,+5],
+      ['今もできますか？','若くないのに無理させたら可哀想',0,-3,-15],
+      ['あ〜、その話前も聞きました♪','地雷踏んだ',0,-5,-25],
+      ['一緒にがんばりましょ♡','右から左に流す音',0,-2,+3],
+    ]},
+    {q:'酒飲んで喋るだけで稼げて、女はラクでいいよな', ch:[
+      ['ホント運がいいんですよ私♡','お前が一番ラクそうな顔してんだろ',0,-2,+5],
+      ['ラクじゃないですよ実は','正論で返したら不機嫌',0,-4,-10],
+      ['お兄さんもキャバ嬢になります？','うわ言ってしまった',0,-3,-20],
+      ['お兄さんの方が大変ですよね','とりあえず逃げる',0,-1,+2],
+    ]},
+  ],
+  自慢: [
+    {q:'この時計、400万のロレックスなんだよね〜', ch:[
+      ['えー！ホンモノですか！？素敵♡','タクシー代借りた先週のお前のセリフか？',0,-1,+15],
+      ['400万…シャンパン入れたら同額♪','釣れた',0,0,+8],
+      ['へぇ〜','リアクション薄すぎた',0,-2,-15],
+      ['私もロレックス欲しい〜♡','おねだり成功',0,-2,+12],
+    ]},
+    {q:'俺、年収では勝ち組かな、まあ謙遜だけど', ch:[
+      ['さすが♡勝ち組オーラ感じてました','勝ち組はそれ自分で言わん',0,-2,+15],
+      ['いくらですか具体的に？','聞いてはいけない一線',0,-3,-10],
+      ['今夜のお会計、勝ち組価格でお願い♡','釣り狙い',0,0,+10],
+      ['お給料じゃなく中身が大事♪','スルー',0,-1,+3],
+    ]},
+  ],
+  セクハラ: [
+    {q:'LINE教えてよ〜、店外で会いたいな', ch:[
+      ['店のじゃダメ？♡こっそり交換するね♪','偽アカ用意済み',0,-2,+12],
+      ['店NGなんですごめんね♡','ルール盾',0,-1,+3],
+      ['気持ち悪いです','本音漏れた',0,-8,-40],
+      ['お兄さん通うペース上げてくれたら♡','釣り戦法',0,0,+10],
+    ]},
+    {q:'お持ち帰り、いくらならOK？', ch:[
+      ['一晩3000万でどう？♡','法外価格で撃退',0,-2,+0],
+      ['ムリです','正論ストレート',0,-5,-25],
+      ['シャンパンタワー入れてくれたら考えてみよっかな〜♡','プロの嘘',0,0,+15],
+      ['お兄さんお家狭そう♡','ボケで逃げる',0,-2,+5],
+    ]},
+  ],
+  金欠: [
+    {q:'シャンパン入れる！…あ、やっぱナシで', ch:[
+      ['えーまたお兄さんに期待しちゃうよ〜？','卓囲み損確定',0,-3,+5],
+      ['じゃキャストドリンク1杯だけでも♡','取れるとこから取る',0,0,+8],
+      ['ケチ','本音漏れた',0,-3,-30],
+      ['また今度ね♡待ってる♡','早めに退店促進',0,-2,+0],
+    ]},
+    {q:'タクシー代だけ貸してくれない？', ch:[
+      ['ごめん私もお財布店に置いてきちゃって〜','絶対返ってこない',0,-1,+0],
+      ['いいですよ！はい1万円♡','善意で死亡',-10000,-5,+10],
+      ['黒服さんに聞いてみますね','店経由で詰め',0,-3,-20],
+      ['歩いて帰ったら？健康♡','正論ボケ',0,-2,-10],
+    ]},
+  ],
+  粘着: [
+    {q:'昨日LINEの返信遅かったね…俺のこと嫌い？', ch:[
+      ['接客中だったの〜お兄さん優先で考えてるよ♡','嘘の魔力',0,-2,+15],
+      ['寝てました','正直は最悪',0,-3,-20],
+      ['他のお兄さんからも来てて…','嫉妬燃料投下',0,-4,-25],
+      ['毎日返信できないのごめんね♡','謝罪戦法',0,-2,+5],
+    ]},
+    {q:'結婚しよう、君が運命だ', ch:[
+      ['えー嬉しい♡考えとくね♪','初回でそれは無理',0,-2,+15],
+      ['お兄さんと？無理','ストレート爆撃',0,-4,-30],
+      ['結婚指輪はティファニーね♡','釣り狙い',0,-1,+10],
+      ['まずは毎週通ってね♡','売上に変換',0,0,+12],
+    ]},
+  ],
+  比較: [
+    {q:'前の嬢の方が可愛かったな', ch:[
+      ['そうなんだ〜♡今度連れてくる？','じゃ前の嬢呼べ',0,-3,+0],
+      ['私もっと頑張ります！','プロの謙遜',0,-2,+8],
+      ['じゃ前の嬢のとこ行けば？','本音爆発',0,-5,-30],
+      ['お兄さんの好みになりたい♡','上手い返し',0,-2,+10],
+    ]},
+  ],
+  神客: [
+    {q:'今日はお疲れさま。無理しないで好きな分入れて', ch:[
+      ['えー！神様♡ドンペリロゼ入れちゃう♡','本物の神客',+80000,+3,+20],
+      ['シャンパンタワー入れちゃう？♡','欲張り',+200000,+5,+15],
+      ['お兄さん優しい…泣きそう♡','感情営業',+30000,+8,+25],
+      ['今夜お持ち帰り♡','調子に乗った',0,-5,-15],
+    ]},
+    {q:'お誕生日いつ？覚えとくね', ch:[
+      ['12月！バースデー来てくれる？♡','タワー誘導',0,+5,+25],
+      ['秘密〜♡','謎めかし',0,+2,+10],
+      ['今度教えるね♡','じらし',0,+1,+5],
+      ['ベンツプレゼントしてくれる？','図々しすぎ',0,-3,-15],
+    ]},
+  ],
+};
+
+let G = null;
+const TARGET_SCORE = 3000;
+const TIME_LIMIT = 60;
+const Q_LIMIT = 10;
+
+function flattenScenes(){
+  const all = [];
+  for(const type of Object.keys(SCENES)){
+    for(const s of SCENES[type]){
+      all.push({type, q:s.q, ch:s.ch});
+    }
+  }
+  return all;
+}
+const QPOOL = flattenScenes();
+
+function renderGame(){
+  G = {score:0, combo:0, qCount:0, correctCount:0, timeLeft:TIME_LIMIT, busy:false, globalTimer:null, qTimer:null, startTime:0, maxCombo:0, lastBonus:0, recentTypes:[], recentQs:[]};
+  root.innerHTML = `
+    <div class="comic-screen">
+      <div class="comic-wrap">
+        <div class="comic-top">
+          <div class="comic-girl">
+            <div class="face-wrap"><span id="girlEmoji">💁‍♀️</span></div>
+            <div class="state" id="girlState">余裕</div>
+          </div>
+          <div class="comic-title-box">
+            <h1>開店中：秒速反応スプリント</h1>
+            <div class="sub">60秒以内に正解選択肢を連打せよ、各問10秒以内、ミスでCOMBO0</div>
+          </div>
+          <div class="comic-time" id="comicTime">
+            <div class="lbl">TIME</div>
+            <div class="val" id="time">60</div>
+            <div class="suf">秒</div>
+          </div>
+        </div>
+        <div class="comic-hud">
+          <div class="item"><div class="l">SCORE</div><div class="v score" id="score">0</div></div>
+          <div class="item"><div class="l">COMBO</div><div class="v combo" id="combo">×0</div></div>
+          <div class="item" id="bonusItem"><div class="l">COMBO BONUS!</div><div class="v bonus" id="bonus">+0</div></div>
+          <div class="item"><div class="l">目標達成率</div><div class="v quota" id="quota">0%</div></div>
+        </div>
+        <div id="stage"></div>
+        <div class="comic-footer"><b>10秒以内に選べ！</b> ミスると <b>COMBOが0</b> に…！</div>
+        <div class="comic-log" id="log"></div>
+      </div>
+    </div>
+  `;
+  updateGirlPortrait();
+  showFx('演出_ドン.png', 900);
+  setTimeout(()=>{ startGlobalTimer(); nextQ(); }, 500);
+}
+
+function startGlobalTimer(){
+  G.startTime = performance.now();
+  G._hurryFired = false;
+  G.globalTimer = setInterval(()=>{
+    const el = performance.now() - G.startTime;
+    const total = TIME_LIMIT * 1000;
+    const prev = G.timeLeft;
+    G.timeLeft = Math.max(0, Math.ceil((total - el) / 1000));
+    if(!G._hurryFired && G.timeLeft <= 10 && G.timeLeft > 0){
+      G._hurryFired = true;
+      showFx('演出_急げ.png', 1000);
+    }
+    const t = document.getElementById('time');
+    if(t){
+      t.textContent = String(G.timeLeft).padStart(3,'0');
+    }
+    const ct = document.getElementById('comicTime');
+    if(ct){
+      if(G.timeLeft <= 10) ct.classList.add('warn');
+      else ct.classList.remove('warn');
+    }
+    updateGirlPortrait();
+    if(el >= total){
+      clearInterval(G.globalTimer);
+      G.globalTimer = null;
+      if(G.qTimer){ clearInterval(G.qTimer); G.qTimer = null; }
+      endGameSession();
+    }
+  }, 100);
+}
+
+function updateGirlPortrait(){
+  if(!G) return;
+  const e = document.getElementById('girlEmoji');
+  const s = document.getElementById('girlState');
+  if(!e || !s) return;
+  let path, emoji, state;
+  if(G.timeLeft > 40){ path = IMG.girlGood; emoji = '💁‍♀️'; state = '余裕'; }
+  else if(G.timeLeft > 20){ path = IMG.girlMid; emoji = '😤'; state = 'キツい'; }
+  else { path = IMG.girlBad; emoji = '😩'; state = '限界'; }
+  if(e.querySelector('img')) {} else e.textContent = emoji;
+  s.textContent = state;
+  checkImg(path).then(ok=>{
+    if(ok){ e.innerHTML = `<img src="${path}" alt="">`; }
+  });
+}
+
+function nextQ(){
+  if(!G || G.timeLeft <= 0) return;
+  G.busy = false;
+  const q = QPOOL[Math.floor(Math.random()*QPOOL.length)];
+  const t = TYPES[q.type];
+  const name = t.names[Math.floor(Math.random()*t.names.length)];
+  const shuffled = [...q.ch].sort(()=>Math.random()-0.5);
+  G.qCount++;
+
+  document.getElementById('stage').innerHTML = `
+    <div class="comic-stage">
+      <div class="comic-cust">
+        <div class="face" id="cFace"><span id="cEmoji">${t.face}</span></div>
+        <div class="name">${name}</div>
+        <div class="tag">${t.tag}</div>
+      </div>
+      <div class="comic-right">
+        <div class="comic-bubble">${q.q}</div>
+        <div class="comic-bar-row" id="qbarwrap">
+          <span class="clock">⏱</span>
+          <span class="lbl">反応ゲージ</span>
+          <div class="bar"><div class="fill" id="qbarfill"></div></div>
+          <span class="hurry">急げ!!</span>
+        </div>
+        <div class="comic-choices" id="choices"></div>
+      </div>
+    </div>
+  `;
+  const custPath = IMG.cust[q.type];
+  if(custPath){
+    checkImg(custPath).then(ok=>{
+      if(ok && document.getElementById('cEmoji')){
+        document.getElementById('cEmoji').innerHTML = `<img src="${custPath}" alt="">`;
+      }
+    });
+  }
+  const cEl = document.getElementById('choices');
+  shuffled.forEach((c,i)=>{
+    const b = document.createElement('button');
+    b.className = 'comic-choice';
+    b.innerHTML = `<div class="num">${i+1}</div><span class="lip">「${c[0]}」</span><span class="think">💭 ${c[1]}</span>`;
+    b.onclick = ()=>answer(b, c);
+    cEl.appendChild(b);
+  });
+
+  const qStart = performance.now();
+  const qLimitMs = Q_LIMIT * 1000;
+  const qbarFill = document.getElementById('qbarfill');
+  const qbarWrap = document.getElementById('qbarwrap');
+  G.qTimer = setInterval(()=>{
+    const e = performance.now() - qStart;
+    const r = Math.max(0, qLimitMs - e);
+    const pct = Math.max(0, r / qLimitMs * 100);
+    if(qbarFill) qbarFill.style.width = pct + '%';
+    if(qbarWrap && pct <= 20) qbarWrap.classList.add('warn');
+    if(r <= 0){
+      clearInterval(G.qTimer);
+      G.qTimer = null;
+      miss();
+    }
+  }, 100);
+}
+
+function answer(btn, c){
+  if(G.busy) return;
+  G.busy = true;
+  if(G.qTimer){ clearInterval(G.qTimer); G.qTimer = null; }
+  const dMood = c[4];
+  const isCorrect = dMood > 0;
+  if(isCorrect){
+    btn.classList.add('correct');
+    G.combo++;
+    if(G.combo > G.maxCombo) G.maxCombo = G.combo;
+    G.correctCount++;
+    const gain = 100 + G.combo * 20;
+    G.score += gain;
+    G.lastBonus = gain;
+    sfxGood();
+    showReact('+'+gain+'  💕', '#5af0a0');
+    document.getElementById('log').textContent = `💭 ${c[1]}`;
+    const bonusItem = document.getElementById('bonusItem');
+    if(bonusItem){ bonusItem.classList.remove('bonus-flash'); void bonusItem.offsetWidth; bonusItem.classList.add('bonus-flash'); }
+    // 演出オーバーレイ
+    if(G.combo >= 3){ showFx('演出_COMBO.png', 800); }
+    else { showFx('演出_正解.png', 600); }
+  } else {
+    btn.classList.add('wrong');
+    G.combo = 0;
+    G.lastBonus = 0;
+    sfxBad();
+    showReact('💣 地雷', '#ff5050');
+    document.getElementById('log').textContent = `💭 ${c[1]}`;
+    showFx('演出_地雷.png', 700);
+  }
+  updateHud();
+  setTimeout(()=>{
+    if(G && G.timeLeft > 0) nextQ();
+  }, 500);
+}
+
+function miss(){
+  if(!G) return;
+  G.busy = true;
+  G.combo = 0;
+  sfxBad();
+  showReact('⏰ 時間切れ', '#ff5050');
+  document.getElementById('log').textContent = '客が痺れを切らした…';
+  updateHud();
+  setTimeout(()=>{
+    if(G && G.timeLeft > 0) nextQ();
+  }, 500);
+}
+
+function showReact(t,c){
+  const r=document.createElement('div');
+  r.className='react'; r.textContent=t; r.style.color=c;
+  r.style.left=(window.innerWidth/2-30)+'px';
+  r.style.top=(window.innerHeight/2-30)+'px';
+  document.body.appendChild(r);
+  setTimeout(()=>r.remove(),1200);
+}
+
+function showFx(file, duration=900){
+  checkImg('画像/' + file).then(ok=>{
+    if(!ok) return;
+    const ov = document.createElement('div');
+    ov.className = 'fx-overlay';
+    const im = document.createElement('img');
+    im.src = '画像/' + file;
+    ov.appendChild(im);
+    document.body.appendChild(ov);
+    setTimeout(()=>ov.classList.add('fade'), Math.max(0, duration-350));
+    setTimeout(()=>ov.remove(), duration);
+  });
+}
+
+function updateHud(){
+  const s=document.getElementById('score'); if(s) s.textContent = G.score.toLocaleString();
+  const co=document.getElementById('combo'); if(co){
+    co.textContent = '×' + G.combo;
+    co.style.color = G.combo >= 5 ? '#ffd23a' : G.combo >= 3 ? '#ff8ad0' : '#ff5a9a';
+  }
+  const bn=document.getElementById('bonus'); if(bn){
+    bn.textContent = '+' + (G.lastBonus||0).toLocaleString();
+  }
+  const pct = Math.min(100, Math.floor(G.score/TARGET_SCORE*100));
+  const q=document.getElementById('quota'); if(q) q.textContent = pct + '%';
+}
+
+function endGameSession(){
+  if(G.qTimer) clearInterval(G.qTimer);
+  if(G.globalTimer) clearInterval(G.globalTimer);
+  window._lastResult = {score:G.score, combo:G.maxCombo, questions:G.qCount, correct:G.correctCount};
+  // BEST 更新
+  try{
+    const best = +(localStorage.getItem('kabaBestScore') || 0);
+    if(G.score > best) localStorage.setItem('kabaBestScore', String(G.score));
+  }catch(e){}
+  const cleared = G.score >= TARGET_SCORE;
+  showFx('演出_TIMEUP.png', 1500);
+  setTimeout(()=>{
+    if(cleared) go('ending');
+    else go('gameover');
+  }, 1600);
+}
+
+// =========================================================================
+// クレジット
+// =========================================================================
+function renderCredits(){
+  const r = window._lastResult || {score:0, combo:0, questions:0, correct:0};
+  const cleared = r.score >= TARGET_SCORE;
+  let grade, title, msg, gradeImg;
+  if(r.score >= 6000){
+    grade='👑'; title='ナンバーワン';
+    msg='伝説の反射神経。COMBOの女王、地雷ゼロ。';
+    gradeImg = '画像/嬢_営業スマイル.png';
+  } else if(r.score >= 4500){
+    grade='💎'; title='指名嬢';
+    msg='余裕で目標達成。地雷判定は完璧。';
+    gradeImg = '画像/嬢_営業スマイル.png';
+  } else if(cleared){
+    grade='🌟'; title='目標クリア';
+    msg='今夜も生き延びた。次は更に高みへ。';
+    gradeImg = '画像/嬢_営業スマイル.png';
+  } else if(r.score < 300){
+    grade='💩'; title='ノルマ未達・罰金';
+    msg='地雷踏みまくり。源氏名変えて出直す？';
+    gradeImg = '画像/嬢_疲弊裏顔.png';
+  } else {
+    grade='😐'; title='かろうじて生存';
+    msg='目標未達。来月はもうちょい集中。';
+    gradeImg = '画像/嬢_心の闇.png';
+  }
+  const bgImg = cleared ? '画像/エンディング_10.png' : '画像/ゲームオーバー.png';
+  root.innerHTML = `
+    <div class="credit-screen">
+      <div class="credit-bg" id="creditBg"></div>
+      <div class="credit-overlay"></div>
+      <img class="grade-img" id="gradeImg" src="${gradeImg}" alt="" onerror="this.style.display='none';document.getElementById('gradeEmoji').style.display='block'">
+      <div class="grade" id="gradeEmoji" style="display:none">${grade}</div>
+      <h2>${title}</h2>
+      <div class="nums">
+        ⚡SCORE <b>${r.score}</b><br>
+        ✓正解 <b>${r.correct} / ${r.questions}</b><br>
+        🔥最大COMBO <b>${r.combo}</b><br>
+        🎯目標 <b>${TARGET_SCORE}</b>　${cleared?'<span style="color:#5af0a0">✓達成</span>':'<span style="color:#ff5050">✗未達</span>'}
+      </div>
+      <div class="msg">${msg}</div>
+      <button onclick="location.reload()">🔄 また明日も出勤</button>
+    </div>
+  `;
+  checkImg(bgImg).then(ok=>{
+    if(ok) document.getElementById('creditBg').style.backgroundImage = `url("${bgImg}")`;
+  });
+}
+
+go('title');
+</script>
+</body>
+</html>
