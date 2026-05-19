@@ -869,7 +869,24 @@ function patternBar(){
   }catch(e){}
 })();
 
+// 紙芝居・演出画像をタイトル表示時にプリロード
+let _preloaded = false;
+function preloadAllImages(){
+  if(_preloaded) return;
+  _preloaded = true;
+  const all = [
+    ...KAMI.prologue_b.map(p=>p.file),
+    ...KAMI.ending.map(e=>e.file),
+    ...KAMI.gameover.map(g=>g.file),
+    '演出_急げ.png','演出_COMBO.png','演出_正解.png','演出_地雷.png','演出_TIMEUP.png','演出_ドン.png',
+    '嬢_営業スマイル.png','嬢_心の闇.png','嬢_疲弊裏顔.png',
+    '客_説教おじさん.png','客_自慢ロレックス.png','客_粘着セクハラ.png','客_金欠ヤンキー.png','客_VIP神客.png','客_粘着メンヘラ.png','客_比較侮辱.png',
+  ];
+  all.forEach(f => { const im = new Image(); im.src = '画像/' + f; });
+}
+
 function renderTitle(){
+  preloadAllImages();
   if(titlePattern === 'A') return renderTitleA();
   if(titlePattern === 'C') return renderTitleC();
   return renderTitleB();
@@ -1179,7 +1196,8 @@ function renderKami(mode){
   root.innerHTML = `
     <div class="kami-screen" id="kamiScreen">
       <div class="kami-img-wrap" id="imgWrap">
-        <div class="kami-placeholder ${isGameover?'go':''}">
+        <img class="kami-img" src="画像/${item.file}" alt="" onerror="this.style.display='none';var ph=document.getElementById('kamiPh');if(ph)ph.style.display='flex'">
+        <div class="kami-placeholder ${isGameover?'go':''}" id="kamiPh" style="display:none">
           <div class="ico">${item.ico}</div>
           <div class="num">${chapter} ${idx+1} / ${list.length}</div>
           <div class="filename">画像/${item.file}</div>
@@ -1192,16 +1210,6 @@ function renderKami(mode){
       </div>
     </div>
   `;
-  const wrap = document.getElementById('imgWrap');
-  checkImg(`画像/${item.file}`).then(ok=>{
-    if(ok && scene===mode){
-      const img = document.createElement('img');
-      img.className = 'kami-img';
-      img.src = `画像/${item.file}`;
-      wrap.innerHTML = '';
-      wrap.appendChild(img);
-    }
-  });
   document.getElementById('kamiScreen').onclick = advanceKami;
   sfxClick();
 }
