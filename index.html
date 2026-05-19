@@ -362,6 +362,84 @@
   .comic-footer b{color:#ff5050;font-size:16px}
   .comic-log{margin-top:6px;font-size:11px;color:#aaa;font-style:italic;text-align:center;min-height:16px}
 
+  /* ========= スマホ対応（要素を大きく＋縦並び） ========= */
+  @media (max-width: 768px){
+    body{font-size:16px}
+    /* タイトル紙芝居 */
+    .title-kamishibai .ks-img-wrap{min-height:40vh;flex:0 0 40vh}
+    .title-kamishibai .ks-caption{padding:18px 16px 24px;min-height:auto;gap:12px}
+    .title-kamishibai .ks-big{font-size:24px;padding:12px 18px;border-width:3px;box-shadow:4px 4px 0 #000;line-height:1.25}
+    .title-kamishibai .ks-mid{font-size:24px}
+    .title-kamishibai .ks-sub{font-size:13px}
+    .title-kamishibai .ks-banner{font-size:13px;padding:6px 16px}
+    .title-kamishibai .ks-start{font-size:22px;padding:14px 50px}
+    /* ゲーム画面 — 完全縦並び */
+    .game-screen, .comic-screen{padding:8px}
+    .comic-wrap{max-width:100%}
+    .comic-top{grid-template-columns:1fr;gap:8px;margin-bottom:8px}
+    .comic-girl{display:grid;grid-template-columns:88px 1fr;align-items:center;padding:6px;gap:8px;text-align:left}
+    .comic-girl .face-wrap{aspect-ratio:1/1;width:88px;height:88px}
+    .comic-girl .state{font-size:14px;padding:4px 10px;margin:0}
+    .comic-title-box{padding:12px 16px;text-align:center}
+    .comic-title-box h1{font-size:22px}
+    .comic-title-box .sub{font-size:12px;margin-top:6px}
+    /* TIME バッジを HUD と同じ行に */
+    .comic-time{transform:rotate(0deg);padding:10px 4px;border-width:3px;box-shadow:3px 3px 0 #000}
+    .comic-time .lbl{font-size:13px}
+    .comic-time .val{font-size:42px}
+    .comic-time .suf{font-size:13px}
+    .comic-hud{grid-template-columns:repeat(2,1fr);gap:6px;padding:10px 12px}
+    .comic-hud .item .l{font-size:11px;letter-spacing:.08em}
+    .comic-hud .item .v{font-size:22px}
+    .comic-hud .v.bonus{font-size:18px}
+    .comic-stage{grid-template-columns:1fr;padding:12px;gap:12px}
+    .comic-cust{display:grid;grid-template-columns:96px 1fr;align-items:stretch;text-align:left;background:rgba(0,0,0,.6)}
+    .comic-cust .face{min-height:96px;height:auto;font-size:48px;border-right:2px solid #ff5a9a}
+    .comic-cust .name{font-size:18px;border-top:2px solid #ff5a9a;text-align:left;padding:6px 12px}
+    .comic-cust .tag{text-align:left;padding:0 12px 8px;font-size:12px}
+    .comic-bubble{font-size:18px;padding:14px 18px;border-width:4px;min-height:64px;line-height:1.5}
+    .comic-bar-row{padding:8px 12px;gap:8px}
+    .comic-bar-row .lbl{font-size:11px}
+    .comic-bar-row .clock{font-size:22px}
+    .comic-bar-row .bar{height:18px}
+    .comic-choices{grid-template-columns:1fr;gap:10px}
+    .comic-choice{padding:12px 14px 12px 44px;font-size:15px;box-shadow:3px 3px 0 #000;border-width:3px;min-height:60px}
+    .comic-choice .num{width:34px;height:34px;font-size:17px;top:-8px;left:-8px}
+    .comic-choice .lip{font-size:16px;margin-bottom:6px}
+    .comic-choice .think{font-size:13px;padding:4px 10px}
+    .comic-footer{font-size:14px;padding:10px;letter-spacing:0}
+    .comic-footer b{font-size:16px}
+    /* 紙芝居（プロローグ・エンディング） */
+    .kami-caption{padding:18px 18px 24px;min-height:auto;max-height:55vh;font-size:16px}
+    .kami-caption .text{font-size:16px;line-height:1.85}
+    .kami-caption .chapter{font-size:11px}
+    .kami-caption .hint{font-size:12px}
+    /* HUD ボタン */
+    #bgm, #skip{font-size:12px;padding:8px 14px}
+    /* クレジット */
+    .credit-screen{padding:24px 18px}
+    .credit-screen .grade-img{width:140px;height:140px;border-width:3px}
+    .credit-screen .grade{font-size:64px}
+    .credit-screen h2{font-size:26px;margin-bottom:12px}
+    .credit-screen .nums{font-size:14px;line-height:2}
+    .credit-screen button{font-size:18px;padding:14px 32px}
+    /* リアクション */
+    .react{font-size:24px}
+    .fx-overlay img{max-width:85vmin;max-height:55vmin}
+  }
+  @media (max-width: 480px){
+    .title-kamishibai .ks-big{font-size:20px}
+    .title-kamishibai .ks-mid{font-size:20px}
+    .title-kamishibai .ks-img-wrap{flex:0 0 32vh}
+    .comic-girl{grid-template-columns:72px 1fr}
+    .comic-girl .face-wrap{width:72px;height:72px}
+    .comic-title-box h1{font-size:19px}
+    .comic-hud .item .v{font-size:18px}
+    .comic-time .val{font-size:36px}
+    .comic-bubble{font-size:16px}
+    .comic-choice .lip{font-size:15px}
+  }
+
   /* ========= コミック演出オーバーレイ ========= */
   .fx-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:300;animation:fxIn .2s ease-out}
   .fx-overlay img{max-width:70vmin;max-height:70vmin;animation:fxPop .55s ease-out;filter:drop-shadow(6px 6px 0 rgba(0,0,0,.7))}
